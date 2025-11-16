@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3 style="font-weight: 500; font-size: 1.5rem;"><i class="bi bi-person-plus"></i> Cadastro de Usuário</h3>
+                <p class="mb-0 mt-2" style="opacity: 0.6; font-size: 0.875rem;">Crie sua conta para começar</p>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.nome.label(class="form-label") }}
+                        {{ form.nome(class="form-control") }}
+                        {% if form.nome.errors %}
+                            <div class="text-danger">
+                                {% for error in form.nome.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control") }}
+                        {% if form.username.errors %}
+                            <div class="text-danger">
+                                {% for error in form.username.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control") }}
+                        {% if form.email.errors %}
+                            <div class="text-danger">
+                                {% for error in form.email.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.senha.label(class="form-label") }}
+                        {{ form.senha(class="form-control") }}
+                        {% if form.senha.errors %}
+                            <div class="text-danger">
+                                {% for error in form.senha.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.confirmar_senha.label(class="form-label") }}
+                        {{ form.confirmar_senha(class="form-control") }}
+                        {% if form.confirmar_senha.errors %}
+                            <div class="text-danger">
+                                {% for error in form.confirmar_senha.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.tipo.label(class="form-label") }}
+                        {{ form.tipo(class="form-select") }}
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Cadastrar
+                        </button>
+                    </div>
+                </form>
+                <hr>
+                <div class="text-center">
+                    <p>Já tem uma conta? <a href="{{ url_for('auth.login') }}">Faça login</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

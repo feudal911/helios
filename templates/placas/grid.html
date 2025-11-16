@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}Grid de Placas - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title"><i class="bi bi-grid-3x3-gap"></i> Grid de Placas</h1>
+        <p class="text-muted" style="font-size: 0.9375rem;">
+            Inversor: <strong>{{ inversor.codigo_serie }}</strong> | 
+            Parque: <strong>{{ inversor.parque.nome }}</strong>
+        </p>
+    </div>
+    <div class="col-md-4 text-end d-flex align-items-end justify-content-end gap-2">
+        <a href="{{ url_for('placas.mapeamento') }}" class="btn btn-secondary btn-lg">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+        <a href="{{ url_for('placas.criar') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Nova Placa
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="mb-0">Legenda:</h5>
+            </div>
+            <div class="d-flex gap-3">
+                <span class="badge" style="background: rgba(52, 199, 89, 0.2); color: #34C759; border: 2px solid #34C759;">
+                    <i class="bi bi-power"></i> Ligada
+                </span>
+                <span class="badge" style="background: rgba(142, 142, 147, 0.2); color: #8E8E93; border: 2px solid #8E8E93;">
+                    <i class="bi bi-power-off"></i> Desligada
+                </span>
+                <span class="badge" style="background: rgba(255, 149, 0, 0.2); color: #FF9500; border: 2px solid #FF9500;">
+                    <i class="bi bi-tools"></i> Manutenção
+                </span>
+            </div>
+        </div>
+        
+        <!-- Grid Visual -->
+        <div class="grid-container" style="overflow-x: auto;">
+            <div style="display: grid; grid-template-columns: repeat({{ (max_x|int) + 1 }}, 1fr); gap: 8px; min-width: fit-content;">
+                <!-- Cabeçalho Y -->
+                <div style="font-weight: bold; text-align: center; padding: 8px;">Y\X</div>
+                {% for x in range((max_x|int) + 1) %}
+                <div style="font-weight: bold; text-align: center; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px;">
+                    {{ x }}
+                </div>
+                {% endfor %}
+                
+                <!-- Linhas do Grid -->
+                {% for y in range((max_y|int) + 1) %}
+                <div style="font-weight: bold; text-align: center; padding: 8px; background: rgba(0,0,0,0.05); border-radius: 4px;">
+                    {{ y }}
+                </div>
+                {% for x in range((max_x|int) + 1) %}
+                    {% set key = x ~ "_" ~ y %}
+                    {% if grid.get(key) %}
+                        {% set placa = grid[key] %}
+                        <div class="placa-grid-item" 
+                             data-placa-id="{{ placa.id }}"
+                             style="
+                                 background: {% if placa.status == 'ligada' %}rgba(52, 199, 89, 0.2){% elif placa.status == 'desligada' %}rgba(142, 142, 147, 0.2){% else %}rgba(255, 149, 0, 0.2){% endif %};
+                                 border: 2px solid {% if placa.status == 'ligada' %}#34C759{% elif placa.status == 'desligada' %}#8E8E93{% else %}#FF9500{% endif %};
+                                 border-radius: 8px;
+                                 padding: 12px;
+                                 cursor: pointer;
+                                 transition: all 0.3s ease;
+                                 min-width: 120px;
+                                 min-height: 100px;
+                                 position: relative;
+                             "
+                             onmouseover="this.style.transform='scale(1.1)'; this.style.zIndex='10'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.2)'"
+                             onmouseout="this.style.transform='scale(1)'; this.style.zIndex='1'; this.style.boxShadow='none'"
+                             onclick="window.location.href='/placas/detalhes/{{ placa.id }}'">
+                            <div class="text-center">
+                                <i class="bi bi-sun-fill" style="font-size: 1.5rem; color: {% if placa.status == 'ligada' %}#34C759{% elif placa.status == 'desligada' %}#8E8E93{% else %}#FF9500{% endif %};"></i>
+                                <div class="mt-2">
+                                    <small class="d-block fw-bold">{{ placa.codigo_serie[:10] }}</small>
+                                    <small class="d-block text-muted">{{ "%.0f"|format(placa.potencia_wp) }}W</small>
+                                    <small class="d-block text-muted">{{ "%.2f"|format(placa.area_m2) }}m²</small>
+                                </div>
+                                <div class="position-absolute top-0 end-0 m-1">
+                                    <button class="btn btn-sm btn-{% if placa.status == 'ligada' %}warning{% else %}success{% endif %}" 
+                                            onclick="event.stopPropagation(); togglePlaca({{ placa.id }})"
+                                            title="{% if placa.status == 'ligada' %}Desligar{% else %}Ligar{% endif %}">
+                                        <i class="bi bi-{% if placa.status == 'ligada' %}power-off{% else %}power{% endif %}"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div style="
+                            background: rgba(0,0,0,0.02);
+                            border: 1px dashed rgba(0,0,0,0.1);
+                            border-radius: 4px;
+                            min-width: 120px;
+                            min-height: 100px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: rgba(0,0,0,0.2);
+                            font-size: 0.75rem;
+                        ">
+                            Vazio
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Estatísticas do Grid -->
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="text-center">
+                <h2 class="display-4">{{ placas|length }}</h2>
+                <p>Total de Placas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stats-card success">
+            <div class="text-center">
+                <h2 class="display-4" id="placas-ligadas">0</h2>
+                <p>Ligadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stats-card warning">
+            <div class="text-center">
+                <h2 class="display-4" id="placas-desligadas">0</h2>
+                <p>Desligadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stats-card info">
+            <div class="text-center">
+                <h2 class="display-4" id="potencia-total">0.0</h2>
+                <p>Potência Total (kW)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Calcular estatísticas
+document.addEventListener('DOMContentLoaded', function() {
+    const placas = {{ placas_json|safe }};
+    let ligadas = 0;
+    let desligadas = 0;
+    let potenciaTotal = 0;
+    
+    placas.forEach(placa => {
+        if (placa.status === 'ligada') {
+            ligadas++;
+            potenciaTotal += placa.potencia_wp;
+        } else if (placa.status === 'desligada') {
+            desligadas++;
+        }
+    });
+    
+    document.getElementById('placas-ligadas').textContent = ligadas;
+    document.getElementById('placas-desligadas').textContent = desligadas;
+    document.getElementById('potencia-total').textContent = (potenciaTotal / 1000).toFixed(1);
+});
+
+function togglePlaca(placaId) {
+    if (confirm('Deseja alterar o status desta placa?')) {
+        fetch(`/placas/toggle/${placaId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao alterar status da placa');
+        });
+    }
+}
+</script>
+{% endblock %}
+

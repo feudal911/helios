@@ -1,0 +1,831 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - HELIOS{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Remover o background padrão do body */
+    body {
+        background: transparent !important;
+        background-color: transparent !important;
+        background-image: none !important;
+    }
+    
+    /* Sobrescrever o body::before do base.html com wallpaper */
+    body::before {
+        background-image: url("{{ url_for('static', filename='images/wallpaper.jpg') }}") !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
+        filter: blur(20px) !important;
+        -webkit-filter: blur(20px) !important;
+        opacity: 1 !important;
+        z-index: -2 !important;
+    }
+    
+    /* Adicionar overlay escuro */
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(26, 26, 26, 0.4) !important;
+        z-index: -1 !important;
+        pointer-events: none;
+    }
+    
+    main {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .page-wrapper {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    /* Cards expansíveis */
+    .expandable-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .expandable-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .expandable-card.expanded {
+        transform: scale(1.02);
+    }
+    
+    .card-expand-content {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+        animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .expand-icon {
+        transition: transform 0.3s ease;
+    }
+    
+    .expandable-card.expanded .expand-icon {
+        transform: rotate(180deg);
+    }
+    
+    .stats-card.expandable-card {
+        min-height: 150px;
+    }
+    
+    #loadingIndicator {
+        display: none;
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: var(--bg-card);
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: var(--shadow-md);
+    }
+    
+    #loadingIndicator.show {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+        <p class="text-muted fs-5">Visão geral do sistema</p>
+    </div>
+</div>
+
+<!-- Filtros Dinâmicos -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-funnel"></i> Filtros</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Período</label>
+                        <select id="filtroPeriodo" class="form-select">
+                            <option value="hoje">Hoje</option>
+                            <option value="semana">Últimos 7 dias</option>
+                            <option value="mes">Últimos 30 dias</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Parque</label>
+                        <select id="filtroParque" class="form-select">
+                            <option value="">Todos os parques</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Inversor</label>
+                        <select id="filtroInversor" class="form-select">
+                            <option value="">Todos os inversores</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Status Placa</label>
+                        <select id="filtroStatusPlaca" class="form-select">
+                            <option value="">Todos os status</option>
+                            <option value="ligada">Ligada</option>
+                            <option value="desligada">Desligada</option>
+                            <option value="manutencao">Manutenção</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <button id="btnAplicarFiltros" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Aplicar Filtros
+                        </button>
+                        <button id="btnLimparFiltros" class="btn btn-secondary ms-2">
+                            <i class="bi bi-x-circle"></i> Limpar
+                        </button>
+                        <div class="form-check form-switch d-inline-block ms-3">
+                            <input class="form-check-input" type="checkbox" id="autoUpdate" checked>
+                            <label class="form-check-label" for="autoUpdate">
+                                Atualização Automática (30s)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-2 mb-4">
+        <div class="stats-card expandable-card" data-card-type="parques">
+            <div class="text-center">
+                <i class="bi bi-building"></i>
+                <h2 class="display-4" id="statTotalParques">{{ dados.total_parques }}</h2>
+                <p><i class="bi bi-building"></i> Parques</p>
+            </div>
+            <div class="card-expand-content" style="display: none;">
+                <hr>
+                <small class="text-muted">Total de parques solares cadastrados no sistema</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-4">
+        <div class="stats-card info">
+            <div class="text-center">
+                <i class="bi bi-cpu"></i>
+                <h2 class="display-4">{{ dados.total_inversores }}</h2>
+                <p><i class="bi bi-cpu"></i> Inversores</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-4">
+        <div class="stats-card">
+            <div class="text-center">
+                <i class="bi bi-sun"></i>
+                <h2 class="display-4">{{ dados.total_placas }}</h2>
+                <p><i class="bi bi-sun"></i> Placas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-4">
+        <div class="stats-card success expandable-card" data-card-type="geracao">
+            <div class="text-center">
+                <i class="bi bi-lightning-charge"></i>
+                <h2 class="display-4" id="statGeracao">{{ "%.1f"|format(dados.geracao_hoje) }}</h2>
+                <p><i class="bi bi-lightning-charge"></i> Geração (kW)</p>
+            </div>
+            <div class="card-expand-content" style="display: none;">
+                <hr>
+                <small class="text-muted">Geração total de energia no período selecionado</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-4">
+        <div class="stats-card info expandable-card" data-card-type="eficiencia">
+            <div class="text-center">
+                <i class="bi bi-speedometer2"></i>
+                <h2 class="display-4" id="statEficiencia">{{ "%.1f"|format(dados.eficiencia_media) }}%</h2>
+                <p><i class="bi bi-speedometer2"></i> Eficiência</p>
+            </div>
+            <div class="card-expand-content" style="display: none;">
+                <hr>
+                <small class="text-muted">Eficiência média do sistema no período selecionado</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-4">
+        <div class="stats-card warning">
+            <div class="text-center">
+                <i class="bi bi-exclamation-triangle"></i>
+                <h2 class="display-4">{{ dados.alertas_ativos }}</h2>
+                <p><i class="bi bi-exclamation-triangle"></i> Alertas</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Geração - Últimos 7 Dias</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chartGeracaoTempo" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Status das Placas</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chartStatusPlacas" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Métricas de Performance -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Performance do Sistema</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Capacidade Total</span>
+                        <span class="text-muted">{{ "%.2f"|format(dados.capacidade_total) }} kW</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Geração Hoje</span>
+                        <span class="text-success">{{ "%.2f"|format(dados.geracao_hoje) }} kW</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Taxa de Utilização</span>
+                        <span class="fw-bold text-primary">{{ "%.1f"|format(dados.taxa_utilizacao) }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             style="width: {{ dados.taxa_utilizacao }}%">
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Eficiência Média</span>
+                        <span class="fw-bold text-success">{{ "%.1f"|format(dados.eficiencia_media) }}%</span>
+                    </div>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ dados.eficiencia_media }}%">
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <small class="text-muted d-block">Semana</small>
+                        <strong>{{ "%.1f"|format(dados.geracao_semana) }} kW</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">Mês</small>
+                        <strong>{{ "%.1f"|format(dados.geracao_mes) }} kW</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">Operacionais</small>
+                        <strong>{{ dados.inversores_operacionais }}/{{ dados.total_inversores }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Ações Rápidas</h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('parques.criar') }}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Novo Parque
+                    </a>
+                    <a href="{{ url_for('inversores.criar') }}" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Novo Inversor
+                    </a>
+                    <a href="{{ url_for('placas.criar') }}" class="btn btn-warning">
+                        <i class="bi bi-plus-circle"></i> Nova Placa
+                    </a>
+                    <a href="{{ url_for('regras.criar') }}" class="btn btn-info">
+                        <i class="bi bi-plus-circle"></i> Nova Regra
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card expandable-card" data-card-type="medicoes">
+            <div class="card-header" style="cursor: pointer;">
+                <h5><i class="bi bi-list-ul"></i> Últimas Medições <i class="bi bi-chevron-down float-end expand-icon"></i></h5>
+            </div>
+            <div class="card-body">
+                <div id="ultimasMedicoesContainer">
+                    {% if dados.ultimas_medicoes %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Inversor</th>
+                                    <th>Data/Hora</th>
+                                    <th>kW</th>
+                                    <th>Efic.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaMedicoes">
+                                {% for med in dados.ultimas_medicoes %}
+                                <tr>
+                                    <td><small>{{ med.inversor.codigo_serie[:10] if med.inversor else 'N/A' }}</small></td>
+                                    <td><small>{{ med.data_medicao.strftime('%d/%m') }} {{ med.hora_medicao.strftime('%H:%M') if med.hora_medicao else '' }}</small></td>
+                                    <td><strong>{{ "%.2f"|format(med.geracao_kw) }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-{% if med.eficiencia and med.eficiencia >= 80 %}success{% elif med.eficiencia and med.eficiencia >= 60 %}warning{% else %}danger{% endif %}">
+                                            {{ "%.1f"|format(med.eficiencia or 0) }}%
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">Nenhuma medição registrada ainda.</p>
+                    <p class="text-center">
+                        <small class="text-muted">Envie dados via API: <code>POST /api/telemetria/data</code></small>
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="card-expand-content" style="display: none;">
+                    <hr>
+                    <small class="text-muted">Últimas 10 medições de telemetria registradas no sistema</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card expandable-card" data-card-type="parques-top">
+            <div class="card-header" style="cursor: pointer;">
+                <h5><i class="bi bi-bar-chart"></i> Top Parques <i class="bi bi-chevron-down float-end expand-icon"></i></h5>
+            </div>
+            <div class="card-body">
+                <div id="parquesGeracaoContainer">
+                    {% if dados.parques_geracao %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Parque</th>
+                                    <th>Geração (kW)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaParques">
+                                {% for parque, total in dados.parques_geracao %}
+                                {% if total and total > 0 %}
+                                <tr>
+                                    <td><small>{{ parque }}</small></td>
+                                    <td><strong>{{ "%.2f"|format(total) }}</strong></td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">Nenhum dado de geração hoje.</p>
+                    {% endif %}
+                </div>
+                <div class="card-expand-content" style="display: none;">
+                    <hr>
+                    <small class="text-muted">Top 5 parques com maior geração no período selecionado</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card expandable-card" data-card-type="inversores-top">
+            <div class="card-header" style="cursor: pointer;">
+                <h5><i class="bi bi-trophy"></i> Top Inversores <i class="bi bi-chevron-down float-end expand-icon"></i></h5>
+            </div>
+            <div class="card-body">
+                <div id="inversoresPerformanceContainer">
+                    {% if dados.inversores_performance %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Inversor</th>
+                                    <th>Eficiência</th>
+                                    <th>Geração</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaInversores">
+                                {% for inv in dados.inversores_performance %}
+                                {% if inv.eficiencia_media is not none and inv.eficiencia_media > 0 %}
+                                <tr>
+                                    <td><small>{{ inv.codigo_serie[:10] if inv.codigo_serie else 'N/A' }}</small></td>
+                                    <td>
+                                        <span class="badge bg-{% if inv.eficiencia_media >= 80 %}success{% elif inv.eficiencia_media >= 60 %}warning{% else %}danger{% endif %}">
+                                            {{ "%.1f"|format(inv.eficiencia_media) }}%
+                                        </span>
+                                    </td>
+                                    <td><strong>{{ "%.2f"|format(inv.geracao_hoje or 0) }}</strong></td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">Nenhum dado de performance disponível.</p>
+                    {% endif %}
+                </div>
+                <div class="card-expand-content" style="display: none;">
+                    <hr>
+                    <small class="text-muted">Top 5 inversores com melhor performance no período selecionado</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuração global do Chart.js para tema escuro
+    Chart.defaults.color = '#e8e8e0';
+    Chart.defaults.borderColor = 'rgba(232, 232, 224, 0.1)';
+    Chart.defaults.backgroundColor = 'rgba(74, 158, 255, 0.1)';
+    
+    let chartGeracaoTempo = null;
+    let chartStatusPlacas = null;
+    let autoUpdateInterval = null;
+    
+    // Estado dos filtros
+    const filtros = {
+        periodo: 'hoje',
+        parque_id: '',
+        inversor_id: '',
+        status_placa: ''
+    };
+    
+    // Carregar parques e inversores para os filtros
+    function carregarFiltros() {
+        // Carregar parques
+        fetch('/api/dashboard/parques')
+            .then(response => response.json())
+            .then(data => {
+                const selectParque = document.getElementById('filtroParque');
+                selectParque.innerHTML = '<option value="">Todos os parques</option>';
+                data.parques.forEach(parque => {
+                    const option = document.createElement('option');
+                    option.value = parque.id;
+                    option.textContent = parque.nome;
+                    selectParque.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Erro ao carregar parques:', error));
+        
+        // Carregar inversores
+        carregarInversores();
+    }
+    
+    // Carregar inversores (filtrado por parque se selecionado)
+    function carregarInversores() {
+        const parqueId = document.getElementById('filtroParque').value;
+        const url = parqueId ? `/api/dashboard/inversores?parque_id=${parqueId}` : '/api/dashboard/inversores';
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                const selectInversor = document.getElementById('filtroInversor');
+                selectInversor.innerHTML = '<option value="">Todos os inversores</option>';
+                data.inversores.forEach(inversor => {
+                    const option = document.createElement('option');
+                    option.value = inversor.id;
+                    option.textContent = inversor.codigo_serie;
+                    selectInversor.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Erro ao carregar inversores:', error));
+    }
+    
+    // Atualizar métricas do dashboard
+    function atualizarMetricas() {
+        const params = new URLSearchParams();
+        if (filtros.periodo) params.append('periodo', filtros.periodo);
+        if (filtros.parque_id) params.append('parque_id', filtros.parque_id);
+        if (filtros.inversor_id) params.append('inversor_id', filtros.inversor_id);
+        if (filtros.status_placa) params.append('status_placa', filtros.status_placa);
+        
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        if (loadingIndicator) loadingIndicator.classList.add('show');
+        
+        fetch(`/api/dashboard/metricas?${params.toString()}`)
+            .then(response => response.json())
+            .then(data => {
+                // Atualizar estatísticas
+                document.getElementById('statGeracao').textContent = data.geracao_total.toFixed(1);
+                document.getElementById('statEficiencia').textContent = data.eficiencia_media.toFixed(1) + '%';
+                
+                // Atualizar tabela de medições
+                atualizarTabelaMedicoes(data.ultimas_medicoes);
+                
+                // Atualizar tabela de parques
+                atualizarTabelaParques(data.parques_geracao);
+                
+                // Atualizar tabela de inversores
+                atualizarTabelaInversores(data.inversores_performance);
+                
+                if (loadingIndicator) loadingIndicator.classList.remove('show');
+            })
+            .catch(error => {
+                console.error('Erro ao atualizar métricas:', error);
+                if (loadingIndicator) loadingIndicator.classList.remove('show');
+            });
+    }
+    
+    // Atualizar tabela de medições
+    function atualizarTabelaMedicoes(medicoes) {
+        const tbody = document.getElementById('tabelaMedicoes');
+        if (!tbody) return;
+        
+        if (medicoes.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Nenhuma medição encontrada</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = medicoes.map(med => {
+            const eficienciaClass = med.eficiencia >= 80 ? 'success' : (med.eficiencia >= 60 ? 'warning' : 'danger');
+            return `
+                <tr>
+                    <td><small>${med.inversor_codigo}</small></td>
+                    <td><small>${med.data} ${med.hora}</small></td>
+                    <td><strong>${med.geracao_kw.toFixed(2)}</strong></td>
+                    <td>
+                        <span class="badge bg-${eficienciaClass}">
+                            ${med.eficiencia.toFixed(1)}%
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    // Atualizar tabela de parques
+    function atualizarTabelaParques(parques) {
+        const tbody = document.getElementById('tabelaParques');
+        if (!tbody) return;
+        
+        if (parques.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">Nenhum dado de geração</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = parques.map(parque => `
+            <tr>
+                <td><small>${parque.nome}</small></td>
+                <td><strong>${parque.geracao.toFixed(2)}</strong></td>
+            </tr>
+        `).join('');
+    }
+    
+    // Atualizar tabela de inversores
+    function atualizarTabelaInversores(inversores) {
+        const tbody = document.getElementById('tabelaInversores');
+        if (!tbody) return;
+        
+        if (inversores.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Nenhum dado de performance</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = inversores.map(inv => {
+            const eficienciaClass = inv.eficiencia >= 80 ? 'success' : (inv.eficiencia >= 60 ? 'warning' : 'danger');
+            return `
+                <tr>
+                    <td><small>${inv.codigo}</small></td>
+                    <td>
+                        <span class="badge bg-${eficienciaClass}">
+                            ${inv.eficiencia.toFixed(1)}%
+                        </span>
+                    </td>
+                    <td><strong>${inv.geracao.toFixed(2)}</strong></td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    // Aplicar filtros
+    function aplicarFiltros() {
+        filtros.periodo = document.getElementById('filtroPeriodo').value;
+        filtros.parque_id = document.getElementById('filtroParque').value;
+        filtros.inversor_id = document.getElementById('filtroInversor').value;
+        filtros.status_placa = document.getElementById('filtroStatusPlaca').value;
+        
+        atualizarMetricas();
+        atualizarGraficos();
+    }
+    
+    // Limpar filtros
+    function limparFiltros() {
+        document.getElementById('filtroPeriodo').value = 'hoje';
+        document.getElementById('filtroParque').value = '';
+        document.getElementById('filtroInversor').value = '';
+        document.getElementById('filtroStatusPlaca').value = '';
+        
+        filtros.periodo = 'hoje';
+        filtros.parque_id = '';
+        filtros.inversor_id = '';
+        filtros.status_placa = '';
+        
+        atualizarMetricas();
+        atualizarGraficos();
+    }
+    
+    // Atualizar gráficos
+    function atualizarGraficos() {
+        const dias = filtros.periodo === 'hoje' ? 7 : (filtros.periodo === 'semana' ? 7 : 30);
+        
+        // Gráfico de geração
+        fetch(`/api/charts/geracao-tempo?dias=${dias}`)
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('chartGeracaoTempo');
+                if (ctx) {
+                    if (chartGeracaoTempo) {
+                        chartGeracaoTempo.destroy();
+                    }
+                    chartGeracaoTempo = new Chart(ctx, {
+                        type: 'line',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    labels: { color: '#e8e8e0' }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { color: '#a8a8a0' },
+                                    grid: { color: 'rgba(232, 232, 224, 0.1)' }
+                                },
+                                x: {
+                                    ticks: { color: '#a8a8a0' },
+                                    grid: { color: 'rgba(232, 232, 224, 0.1)' }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Erro ao atualizar gráfico de geração:', error));
+        
+        // Gráfico de status
+        fetch('/api/charts/status-placas')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('chartStatusPlacas');
+                if (ctx) {
+                    if (chartStatusPlacas) {
+                        chartStatusPlacas.destroy();
+                    }
+                    chartStatusPlacas = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: { color: '#e8e8e0', padding: 15 }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Erro ao atualizar gráfico de status:', error));
+    }
+    
+    // Cards expansíveis
+    document.querySelectorAll('.expandable-card').forEach(card => {
+        const header = card.querySelector('.card-header');
+        if (header) {
+            header.addEventListener('click', function() {
+                card.classList.toggle('expanded');
+                const content = card.querySelector('.card-expand-content');
+                if (content) {
+                    content.style.display = content.style.display === 'none' ? 'block' : 'none';
+                }
+            });
+        }
+    });
+    
+    // Event listeners
+    document.getElementById('btnAplicarFiltros').addEventListener('click', aplicarFiltros);
+    document.getElementById('btnLimparFiltros').addEventListener('click', limparFiltros);
+    document.getElementById('filtroParque').addEventListener('change', function() {
+        carregarInversores();
+        document.getElementById('filtroInversor').value = '';
+    });
+    
+    // Atualização automática
+    const autoUpdateCheckbox = document.getElementById('autoUpdate');
+    autoUpdateCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            iniciarAutoUpdate();
+        } else {
+            pararAutoUpdate();
+        }
+    });
+    
+    function iniciarAutoUpdate() {
+        if (autoUpdateInterval) clearInterval(autoUpdateInterval);
+        autoUpdateInterval = setInterval(() => {
+            atualizarMetricas();
+            atualizarGraficos();
+        }, 30000); // 30 segundos
+    }
+    
+    function pararAutoUpdate() {
+        if (autoUpdateInterval) {
+            clearInterval(autoUpdateInterval);
+            autoUpdateInterval = null;
+        }
+    }
+    
+    // Inicializar gráficos
+    atualizarGraficos();
+    
+    // Carregar filtros e métricas iniciais
+    carregarFiltros();
+    atualizarMetricas();
+    
+    // Iniciar auto-update se estiver marcado
+    if (autoUpdateCheckbox.checked) {
+        iniciarAutoUpdate();
+    }
+    
+    // Criar indicador de loading
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'loadingIndicator';
+    loadingIndicator.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Atualizando...';
+    document.body.appendChild(loadingIndicator);
+    
+    // Adicionar estilo para spinner
+    const style = document.createElement('style');
+    style.textContent = `
+        .spin {
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+{% endblock %}
+
+
+

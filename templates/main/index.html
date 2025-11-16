@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Início - HELIOS{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Remover o background padrão do body */
+    body {
+        background: transparent !important;
+        background-color: transparent !important;
+        background-image: none !important;
+    }
+    
+    /* Sobrescrever o body::before do base.html com wallpaper */
+    body::before {
+        background-image: url("{{ url_for('static', filename='images/wallpaper.jpg') }}") !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
+        filter: blur(20px) !important;
+        -webkit-filter: blur(20px) !important;
+        opacity: 1 !important;
+        z-index: -2 !important;
+    }
+    
+    /* Adicionar overlay escuro */
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(26, 26, 26, 0.4) !important;
+        z-index: -1 !important;
+        pointer-events: none;
+    }
+    
+    main {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .page-wrapper {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    /* Container do GIF */
+    .video-container {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg);
+        background: var(--bg-darker);
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .intro-gif {
+        width: 100%;
+        height: auto;
+        max-height: 60vh;
+        display: block;
+        object-fit: contain;
+        background: transparent;
+    }
+    
+    .hero-section {
+        padding: 2rem 0;
+        min-height: 50vh;
+        display: flex;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section mb-5">
+    <div class="container">
+        <div class="video-container">
+            <img id="introGif" src="{{ url_for('static', filename='images/intro.gif') }}" alt="HELIOS Intro" class="intro-gif">
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-3 mb-4">
+        <div class="stats-card">
+            <div class="text-center">
+                <i class="bi bi-building"></i>
+                <h2 class="display-4">{{ dados.total_parques }}</h2>
+                <p><i class="bi bi-building"></i> Parques Solares</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="stats-card info">
+            <div class="text-center">
+                <i class="bi bi-cpu"></i>
+                <h2 class="display-4">{{ dados.total_inversores }}</h2>
+                <p><i class="bi bi-cpu"></i> Inversores</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="stats-card success">
+            <div class="text-center">
+                <i class="bi bi-lightning-charge"></i>
+                <h2 class="display-4">{{ "%.1f"|format(dados.geracao_hoje) }}</h2>
+                <p><i class="bi bi-lightning-charge"></i> Geração Hoje (kW)</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="stats-card warning">
+            <div class="text-center">
+                <i class="bi bi-exclamation-triangle"></i>
+                <h2 class="display-4">{{ dados.alertas_ativos }}</h2>
+                <p><i class="bi bi-exclamation-triangle"></i> Alertas Ativos</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Performance do Sistema</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Capacidade Total</span>
+                        <span class="text-muted">{{ "%.2f"|format(dados.capacidade_total) }} kW</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Eficiência Média</span>
+                        <span class="fw-bold text-success">{{ "%.1f"|format(dados.eficiencia_media) }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ dados.eficiencia_media if dados.eficiencia_media <= 100 else 100 }}%">
+                        </div>
+                    </div>
+                    <div class="mt-2 text-end">
+                        <small class="text-muted">{{ "%.1f"|format(dados.eficiencia_media) }}%</small>
+                    </div>
+                </div>
+                {% if dados.capacidade_total > 0 %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="fw-bold">Taxa de Utilização</span>
+                        <span class="fw-bold text-primary">{{ "%.1f"|format((dados.geracao_hoje / dados.capacidade_total * 100) if dados.capacidade_total > 0 else 0) }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-primary" role="progressbar" 
+                             style="width: {{ ((dados.geracao_hoje / dados.capacidade_total * 100) if dados.capacidade_total > 0 else 0) if ((dados.geracao_hoje / dados.capacidade_total * 100) if dados.capacidade_total > 0 else 0) <= 100 else 100 }}%">
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Sobre o Sistema</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">O HELIOS é uma plataforma completa para gerenciamento de fazendas solares, 
+                oferecendo monitoramento em tempo real, manutenção preditiva e alertas inteligentes.</p>
+                <ul class="list-unstyled mb-3">
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Monitoramento em tempo real</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Manutenção preditiva</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Alertas inteligentes</li>
+                    <li class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Relatórios detalhados</li>
+                </ul>
+                <a href="{{ url_for('main.solucao') }}" class="btn btn-primary">
+                    <i class="bi bi-arrow-right"></i> Saiba Mais
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block title %}Nova Placa Solar - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <h1 class="page-title"><i class="bi bi-plus-circle"></i> Nova Placa Solar</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" id="placaForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Código de Série *</label>
+                            <input type="text" class="form-control" name="codigo_serie" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Modelo *</label>
+                            <input type="text" class="form-control" name="modelo" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Potência (Wp) *</label>
+                            <input type="number" step="0.01" class="form-control" name="potencia_wp" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Largura (cm) *</label>
+                            <input type="number" step="0.1" class="form-control" name="largura_cm" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Altura (cm) *</label>
+                            <input type="number" step="0.1" class="form-control" name="altura_cm" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Área (m²)</label>
+                            <input type="number" step="0.01" class="form-control" name="area_m2" id="area_m2" readonly>
+                            <small class="text-muted">Calculado automaticamente</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Posição X (Latitude) *</label>
+                            <input type="number" step="0.000001" class="form-control" name="posicao_x" id="posicao_x" required readonly>
+                            <small class="text-muted">Clique no mapa para definir</small>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Posição Y (Longitude) *</label>
+                            <input type="number" step="0.000001" class="form-control" name="posicao_y" id="posicao_y" required readonly>
+                            <small class="text-muted">Clique no mapa para definir</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label class="form-label mb-2">Selecione a Localização no Mapa *</label>
+                            <div class="d-flex gap-2 mb-2">
+                                <button type="button" class="btn btn-sm btn-info" id="btnGeolocalizacao">
+                                    <i class="bi bi-geo-alt"></i> Usar Minha Localização
+                                </button>
+                                <button type="button" class="btn btn-sm btn-secondary" id="btnLimparCoordenadas">
+                                    <i class="bi bi-x-circle"></i> Limpar
+                                </button>
+                            </div>
+                            <div id="map" style="height: 400px; width: 100%; border-radius: 8px; border: 1px solid var(--border-color);"></div>
+                            <small class="text-muted d-block mt-2">
+                                <i class="bi bi-info-circle"></i> Clique no mapa para definir as coordenadas da placa solar
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Inversor *</label>
+                            <select class="form-select" name="inversor_id" required>
+                                <option value="">Selecione um inversor</option>
+                                {% for inversor in inversores %}
+                                <option value="{{ inversor.id }}">
+                                    {{ inversor.codigo_serie }} - {{ inversor.parque.nome }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Status *</label>
+                            <select class="form-select" name="status" required>
+                                <option value="ligada">Ligada</option>
+                                <option value="desligada">Desligada</option>
+                                <option value="manutencao">Manutenção</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Data de Instalação *</label>
+                            <input type="date" class="form-control" name="data_instalacao" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Eficiência (%)</label>
+                            <input type="number" step="0.1" class="form-control" name="eficiencia">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Tensão Nominal (V)</label>
+                            <input type="number" step="0.1" class="form-control" name="tensao_nominal">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Corrente Máxima (A)</label>
+                            <input type="number" step="0.01" class="form-control" name="corrente_max">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Temperatura Máx (°C)</label>
+                            <input type="number" step="0.1" class="form-control" name="temperatura_max">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Fabricante</label>
+                        <input type="text" class="form-control" name="fabricante">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Observações</label>
+                        <textarea class="form-control" name="observacoes" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('placas.mapeamento') }}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+    #map {
+        z-index: 1;
+    }
+    
+    .leaflet-container {
+        background: var(--bg-card) !important;
+    }
+    
+    .leaflet-popup-content-wrapper {
+        background: var(--bg-card) !important;
+        color: var(--text-primary) !important;
+        border-radius: 6px;
+    }
+    
+    .leaflet-popup-tip {
+        background: var(--bg-card) !important;
+    }
+    
+    .leaflet-control {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border-color) !important;
+    }
+    
+    .leaflet-control a {
+        background-color: var(--bg-card) !important;
+        color: var(--text-primary) !important;
+    }
+    
+    .leaflet-control a:hover {
+        background-color: var(--bg-card-hover) !important;
+    }
+    
+    .leaflet-bar {
+        border: 1px solid var(--border-color) !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Mapa de Geolocalização
+let map;
+let marker = null;
+let coordenadasSelecionadas = false;
+
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', function() {
+    // Calcular área automaticamente
+    const larguraInput = document.querySelector('input[name="largura_cm"]');
+    const alturaInput = document.querySelector('input[name="altura_cm"]');
+    
+    if (larguraInput && alturaInput) {
+        larguraInput.addEventListener('input', calcularArea);
+        alturaInput.addEventListener('input', calcularArea);
+    }
+    
+    function calcularArea() {
+        const largura = parseFloat(larguraInput.value) || 0;
+        const altura = parseFloat(alturaInput.value) || 0;
+        const area = (largura * altura) / 10000;
+        const areaInput = document.getElementById('area_m2');
+        if (areaInput) {
+            areaInput.value = area.toFixed(2);
+        }
+    }
+    
+    // Coordenadas padrão (Brasil - centro aproximado)
+    const defaultLat = -14.2350;
+    const defaultLng = -51.9253;
+    
+    // Inicializar mapa
+    try {
+        map = L.map('map').setView([defaultLat, defaultLng], 6);
+        
+        // Adicionar tile layer (OpenStreetMap)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
+    } catch (error) {
+        console.error('Erro ao inicializar mapa:', error);
+        alert('Erro ao carregar o mapa. Por favor, recarregue a página.');
+        return;
+    }
+    
+    // Evento de clique no mapa
+    map.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+        
+        // Atualizar campos
+        const posXInput = document.getElementById('posicao_x');
+        const posYInput = document.getElementById('posicao_y');
+        
+        if (posXInput && posYInput) {
+            posXInput.value = lat.toFixed(6);
+            posYInput.value = lng.toFixed(6);
+            coordenadasSelecionadas = true;
+        }
+        
+        // Remover marcador anterior se existir
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        
+        // Adicionar novo marcador
+        marker = L.marker([lat, lng]).addTo(map);
+        marker.bindPopup(`<b>Coordenadas Selecionadas</b><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+    });
+    
+    // Função para atualizar coordenadas no mapa
+    function atualizarCoordenadas(lat, lng, origem) {
+        const posXInput = document.getElementById('posicao_x');
+        const posYInput = document.getElementById('posicao_y');
+        
+        if (posXInput && posYInput) {
+            posXInput.value = lat.toFixed(6);
+            posYInput.value = lng.toFixed(6);
+            coordenadasSelecionadas = true;
+        }
+        
+        // Centralizar mapa na localização
+        map.setView([lat, lng], 15);
+        
+        // Remover marcador anterior se existir
+        if (marker) {
+            map.removeLayer(marker);
+        }
+        
+        // Adicionar marcador na localização
+        marker = L.marker([lat, lng]).addTo(map);
+        marker.bindPopup(`<b>${origem}</b><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`).openPopup();
+    }
+    
+    // Função para obter localização via IP (fallback)
+    function obterLocalizacaoPorIP(btn) {
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Obtendo localização aproximada...';
+        
+        // Lista de serviços de geolocalização por IP (tentamos todos)
+        const servicos = [
+            {
+                url: 'https://ipapi.co/json/',
+                parse: (data) => data.latitude && data.longitude ? { lat: data.latitude, lng: data.longitude } : null
+            },
+            {
+                url: 'https://ip-api.com/json/',
+                parse: (data) => data.lat && data.lon ? { lat: data.lat, lng: data.lon } : null
+            },
+            {
+                url: 'https://freegeoip.app/json/',
+                parse: (data) => data.latitude && data.longitude ? { lat: data.latitude, lng: data.longitude } : null
+            },
+            {
+                url: 'https://api.ipgeolocation.io/ipgeo?apiKey=free',
+                parse: (data) => data.latitude && data.longitude ? { lat: parseFloat(data.latitude), lng: parseFloat(data.longitude) } : null
+            }
+        ];
+        
+        // Tentar cada serviço sequencialmente
+        let tentativaAtual = 0;
+        
+        function tentarProximoServico() {
+            if (tentativaAtual >= servicos.length) {
+                // Todos os serviços falharam - usar coordenadas padrão do Brasil e instruir o usuário
+                const defaultLat = -14.2350;
+                const defaultLng = -51.9253;
+                map.setView([defaultLat, defaultLng], 6);
+                
+                // Mostrar mensagem amigável
+                const mensagem = document.createElement('div');
+                mensagem.className = 'alert alert-info alert-dismissible fade show';
+                mensagem.style.position = 'fixed';
+                mensagem.style.top = '20px';
+                mensagem.style.right = '20px';
+                mensagem.style.zIndex = '10000';
+                mensagem.style.maxWidth = '400px';
+                mensagem.innerHTML = `
+                    <strong><i class="bi bi-info-circle"></i> Localização não detectada</strong><br>
+                    Por favor, <strong>clique no mapa</strong> para selecionar a localização da placa solar.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+                document.body.appendChild(mensagem);
+                
+                // Remover mensagem após 10 segundos
+                setTimeout(() => {
+                    if (mensagem.parentNode) {
+                        mensagem.remove();
+                    }
+                }, 10000);
+                
+                btn.innerHTML = '<i class="bi bi-geo-alt"></i> Usar Minha Localização';
+                btn.disabled = false;
+                return;
+            }
+            
+            const servico = servicos[tentativaAtual];
+            tentativaAtual++;
+            
+            fetch(servico.url)
+                .then(response => {
+                    if (!response.ok) throw new Error('HTTP error');
+                    return response.json();
+                })
+                .then(data => {
+                    const coords = servico.parse(data);
+                    if (coords) {
+                        atualizarCoordenadas(coords.lat, coords.lng, 'Localização Aproximada (IP)');
+                        btn.innerHTML = '<i class="bi bi-geo-alt"></i> Usar Minha Localização';
+                        btn.disabled = false;
+                    } else {
+                        tentarProximoServico();
+                    }
+                })
+                .catch(error => {
+                    console.log(`Serviço ${servico.url} falhou, tentando próximo...`);
+                    tentarProximoServico();
+                });
+        }
+        
+        tentarProximoServico();
+    }
+    
+    // Botão de geolocalização
+    const btnGeolocalizacao = document.getElementById('btnGeolocalizacao');
+    if (btnGeolocalizacao) {
+        btnGeolocalizacao.addEventListener('click', function() {
+            const btn = this;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Obtendo localização...';
+            btn.disabled = true;
+            
+            // Primeiro tentar geolocalização do navegador (mais precisa)
+            if (navigator.geolocation) {
+                // Opções de geolocalização
+                const options = {
+                    enableHighAccuracy: false, // Mudado para false para funcionar melhor
+                    timeout: 8000,
+                    maximumAge: 60000 // Aceitar cache de até 1 minuto
+                };
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        atualizarCoordenadas(lat, lng, 'Sua Localização');
+                        btn.innerHTML = '<i class="bi bi-geo-alt"></i> Usar Minha Localização';
+                        btn.disabled = false;
+                    },
+                    function(error) {
+                        // Se falhar, tentar localização por IP
+                        console.log('Geolocalização do navegador falhou, tentando IP...', error);
+                        obterLocalizacaoPorIP(btn);
+                    },
+                    options
+                );
+            } else {
+                // Se não suportar geolocalização, usar IP
+                obterLocalizacaoPorIP(btn);
+            }
+        });
+    }
+    
+    // Botão limpar coordenadas
+    const btnLimpar = document.getElementById('btnLimparCoordenadas');
+    if (btnLimpar) {
+        btnLimpar.addEventListener('click', function() {
+            const posXInput = document.getElementById('posicao_x');
+            const posYInput = document.getElementById('posicao_y');
+            
+            if (posXInput) posXInput.value = '';
+            if (posYInput) posYInput.value = '';
+            coordenadasSelecionadas = false;
+            
+            if (marker) {
+                map.removeLayer(marker);
+                marker = null;
+            }
+        });
+    }
+    
+    // Validação do formulário
+    const form = document.getElementById('placaForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const posXInput = document.getElementById('posicao_x');
+            const posYInput = document.getElementById('posicao_y');
+            
+            if (!posXInput || !posYInput || !posXInput.value || !posYInput.value) {
+                e.preventDefault();
+                alert('Por favor, selecione uma localização no mapa clicando ou usando sua geolocalização.');
+                return false;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+
+
+
+

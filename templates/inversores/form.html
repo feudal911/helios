@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1><i class="bi bi-cpu"></i> {{ titulo }}</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.codigo_serie.label(class="form-label") }}
+                        {{ form.codigo_serie(class="form-control") }}
+                        {% if form.codigo_serie.errors %}
+                            <div class="text-danger">
+                                {% for error in form.codigo_serie.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.modelo.label(class="form-label") }}
+                        {{ form.modelo(class="form-control") }}
+                        {% if form.modelo.errors %}
+                            <div class="text-danger">
+                                {% for error in form.modelo.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.capacidade_kw.label(class="form-label") }}
+                            {{ form.capacidade_kw(class="form-control") }}
+                            {% if form.capacidade_kw.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.capacidade_kw.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.data_instalacao.label(class="form-label") }}
+                            {{ form.data_instalacao(class="form-control", type="date") }}
+                            {% if form.data_instalacao.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.data_instalacao.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.parque_id.label(class="form-label") }}
+                        {{ form.parque_id(class="form-select") }}
+                        {% if form.parque_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.parque_id.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.status.label(class="form-label") }}
+                        {{ form.status(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.localizacao_fisica.label(class="form-label") }}
+                        {{ form.localizacao_fisica(class="form-control") }}
+                        {% if form.localizacao_fisica.errors %}
+                            <div class="text-danger">
+                                {% for error in form.localizacao_fisica.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('inversores.listar') }}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

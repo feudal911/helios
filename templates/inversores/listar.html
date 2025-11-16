@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Inversores - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title"><i class="bi bi-cpu"></i> Inversores</h1>
+        <p class="text-muted" style="font-size: 0.9375rem;">Gerencie seus equipamentos de inversão</p>
+    </div>
+    <div class="col-md-4 text-end d-flex align-items-end justify-content-end gap-2">
+        <a href="{{ url_for('inversores.criar') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Novo Inversor
+        </a>
+        <a href="{{ url_for('inversores.upload_csv') }}" class="btn btn-success btn-lg">
+            <i class="bi bi-upload"></i> CSV
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if inversores_com_info %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Código de Série</th>
+                        <th>Modelo</th>
+                        <th>Parque</th>
+                        <th>Capacidade (kW)</th>
+                        <th>Eficiência (%)</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inversores_com_info %}
+                    <tr>
+                        <td><strong>{{ item.inversor.codigo_serie }}</strong></td>
+                        <td>{{ item.inversor.modelo }}</td>
+                        <td>{{ item.parque_nome }}</td>
+                        <td>{{ "%.2f"|format(item.inversor.capacidade_kw) }}</td>
+                        <td>
+                            {% if item.eficiencia < 80 %}
+                                <span class="text-danger">{{ "%.1f"|format(item.eficiencia) }}%</span>
+                            {% elif item.eficiencia < 90 %}
+                                <span class="text-warning">{{ "%.1f"|format(item.eficiencia) }}%</span>
+                            {% else %}
+                                <span class="text-success">{{ "%.1f"|format(item.eficiencia) }}%</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.inversor.status == 'operacional' %}
+                                <span class="badge bg-success">{{ item.inversor.status|title }}</span>
+                            {% elif item.inversor.status == 'manutencao' %}
+                                <span class="badge bg-warning">{{ item.inversor.status|title }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ item.inversor.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('inversores.detalhes', id=item.inversor.id) }}" 
+                               class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('inversores.editar', id=item.inversor.id) }}" 
+                               class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('inversores.excluir', id=item.inversor.id) }}" 
+                                  style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" 
+                                        onclick="return confirm('Tem certeza que deseja excluir este inversor?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-cpu"></i>
+            <h4>Nenhum inversor cadastrado ainda</h4>
+            <p class="mb-4">Comece criando seu primeiro inversor</p>
+            <a href="{{ url_for('inversores.criar') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Criar Primeiro Inversor
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

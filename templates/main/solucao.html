@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Solução e Arquitetura - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4"><i class="bi bi-diagram-3"></i> Solução e Arquitetura</h1>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary">
+                <h3>Arquitetura do Sistema</h3>
+            </div>
+            <div class="card-body">
+                <h4>Padrão MVC (Model-View-Controller)</h4>
+                <p>O HELIOS foi desenvolvido seguindo o padrão arquitetural MVC para garantir 
+                separação de responsabilidades e facilidade de manutenção:</p>
+                
+                <ul>
+                    <li><strong>Model:</strong> Gerencia a lógica de negócio e interação com o banco de dados</li>
+                    <li><strong>View:</strong> Templates HTML/Jinja2 responsáveis pela interface do usuário</li>
+                    <li><strong>Controller:</strong> Rotas Flask que recebem requisições e interagem com Models e Views</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success">
+                <h5>Tecnologias Utilizadas</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li><strong>Backend:</strong> Python Flask</li>
+                    <li><strong>Banco de Dados:</strong> SQLite (SQLAlchemy ORM)</li>
+                    <li><strong>Autenticação:</strong> Flask-Login com sessões</li>
+                    <li><strong>Segurança:</strong> Bcrypt para hash de senhas</li>
+                    <li><strong>Frontend:</strong> Bootstrap 5 + Jinja2</li>
+                    <li><strong>API:</strong> RESTful para telemetria</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info">
+                <h5>Funcionalidades Principais</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>CRUD completo de Parques Solares</li>
+                    <li>CRUD completo de Inversores/Ativos</li>
+                    <li>CRUD completo de Regras de Alerta</li>
+                    <li>Upload de dados históricos (CSV)</li>
+                    <li>Download de relatórios (PDF/CSV)</li>
+                    <li>API RESTful para telemetria</li>
+                    <li>Sistema de alertas preditivos</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h5>Estrutura de Dados</h5>
+            </div>
+            <div class="card-body">
+                <p>O sistema utiliza as seguintes entidades principais:</p>
+                <ul>
+                    <li><strong>Usuarios:</strong> Técnicos e administradores do sistema</li>
+                    <li><strong>Parques:</strong> Fazendas solares cadastradas</li>
+                    <li><strong>Inversores:</strong> Equipamentos de inversão de energia</li>
+                    <li><strong>Regras:</strong> Regras lógicas para geração de alertas</li>
+                    <li><strong>Medicoes_Telemetria:</strong> Dados de medição em tempo real</li>
+                    <li><strong>Alertas:</strong> Alertas gerados pelas regras</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 text-center">
+        <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-success">
+            <i class="bi bi-box-arrow-in-right"></i> Acessar Sistema
+        </a>
+    </div>
+</div>
+{% endblock %}
+

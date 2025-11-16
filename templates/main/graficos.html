@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+
+{% block title %}Gráficos e Análises - HELIOS{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Remover o background padrão do body */
+    body {
+        background: transparent !important;
+        background-color: transparent !important;
+        background-image: none !important;
+    }
+    
+    /* Sobrescrever o body::before do base.html com wallpaper */
+    body::before {
+        background-image: url("{{ url_for('static', filename='images/wallpaper.jpg') }}") !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
+        filter: blur(20px) !important;
+        -webkit-filter: blur(20px) !important;
+        opacity: 1 !important;
+        z-index: -2 !important;
+    }
+    
+    /* Adicionar overlay escuro */
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(26, 26, 26, 0.4) !important;
+        z-index: -1 !important;
+        pointer-events: none;
+    }
+    
+    main {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .page-wrapper {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin-bottom: 1.5rem;
+    }
+    
+    .chart-controls {
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title"><i class="bi bi-bar-chart"></i> Gráficos e Análises</h1>
+        <p class="text-muted fs-5">Visualizações interativas dos dados do sistema</p>
+    </div>
+</div>
+
+<!-- Gráfico 1: Geração ao longo do tempo -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Geração de Energia ao Longo do Tempo</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-controls mb-3">
+                    <label class="form-label me-2">Período:</label>
+                    <select id="periodoGeracao" class="form-select form-select-sm d-inline-block" style="width: auto;">
+                        <option value="7">Últimos 7 dias</option>
+                        <option value="15">Últimos 15 dias</option>
+                        <option value="30">Últimos 30 dias</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartGeracaoTempo"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos lado a lado -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Distribuição de Status das Placas</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="chartStatusPlacas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Eficiência Média por Hora (Hoje)</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="chartEficienciaHora"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico 3: Temperatura vs Geração -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-thermometer-half"></i> Temperatura vs Geração</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-controls mb-3">
+                    <label class="form-label me-2">Período:</label>
+                    <select id="periodoTempGeracao" class="form-select form-select-sm d-inline-block" style="width: auto;">
+                        <option value="7">Últimos 7 dias</option>
+                        <option value="15">Últimos 15 dias</option>
+                        <option value="30">Últimos 30 dias</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chartTemperaturaGeracao"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico 4: Comparação de Parques -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-building"></i> Comparação de Geração por Parque (Hoje)</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="chartParquesComparacao"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Configuração global do Chart.js para tema escuro
+    Chart.defaults.color = '#e8e8e0';
+    Chart.defaults.borderColor = 'rgba(232, 232, 224, 0.1)';
+    Chart.defaults.backgroundColor = 'rgba(74, 158, 255, 0.1)';
+    
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: '#e8e8e0',
+                    padding: 15
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    color: '#a8a8a0'
+                },
+                grid: {
+                    color: 'rgba(232, 232, 224, 0.1)'
+                }
+            },
+            x: {
+                ticks: {
+                    color: '#a8a8a0'
+                },
+                grid: {
+                    color: 'rgba(232, 232, 224, 0.1)'
+                }
+            }
+        }
+    };
+    
+    let chartGeracaoTempo = null;
+    let chartStatusPlacas = null;
+    let chartEficienciaHora = null;
+    let chartTemperaturaGeracao = null;
+    let chartParquesComparacao = null;
+    
+    // Função para carregar gráfico de geração ao longo do tempo
+    function carregarGeracaoTempo(dias = 7) {
+        fetch(`/api/charts/geracao-tempo?dias=${dias}`)
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('chartGeracaoTempo');
+                if (ctx) {
+                    if (chartGeracaoTempo) {
+                        chartGeracaoTempo.destroy();
+                    }
+                    chartGeracaoTempo = new Chart(ctx, {
+                        type: 'line',
+                        data: data,
+                        options: chartOptions
+                    });
+                }
+            })
+            .catch(error => console.error('Erro ao carregar gráfico de geração:', error));
+    }
+    
+    // Função para carregar gráfico de status das placas
+    function carregarStatusPlacas() {
+        fetch('/api/charts/status-placas')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('chartStatusPlacas');
+                if (ctx) {
+                    if (chartStatusPlacas) {
+                        chartStatusPlacas.destroy();
+                    }
+                    chartStatusPlacas = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: data,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        color: '#e8e8e0',
+                                        padding: 15
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Erro ao carregar gráfico de status:', error));
+    }
+    
+    // Função para carregar gráfico de eficiência por hora
+    function carregarEficienciaHora() {
+        fetch('/api/charts/eficiencia-hora')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('chartEficienciaHora');
+                if (ctx) {
+                    if (chartEficienciaHora) {
+                        chartEficienciaHora.destroy();
+                    }
+                    chartEficienciaHora = new Chart(ctx, {
+                        type: 'bar',
+                        data: data,
+                        options: chartOptions
+                    });
+                }
+            })
+            .catch(error => console.error('Erro ao carregar gráfico de eficiência:', error));
+    }
+    
+    // Função para carregar gráfico de temperatura vs geração
+    function carregarTemperaturaGeracao(dias = 7) {
+        fetch(`/api/charts/temperatura-geracao?dias=${dias}`)
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('chartTemperaturaGeracao');
+                if (ctx) {
+                    if (chartTemperaturaGeracao) {
+                        chartTemperaturaGeracao.destroy();
+                    }
+                    chartTemperaturaGeracao = new Chart(ctx, {
+                        type: 'line',
+                        data: data,
+                        options: {
+                            ...chartOptions,
+                            scales: {
+                                y: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'left',
+                                    beginAtZero: true,
+                                    ticks: { color: '#a8a8a0' },
+                                    grid: { color: 'rgba(232, 232, 224, 0.1)' },
+                                    title: {
+                                        display: true,
+                                        text: 'Temperatura (°C)',
+                                        color: '#f87171'
+                                    }
+                                },
+                                y1: {
+                                    type: 'linear',
+                                    display: true,
+                                    position: 'right',
+                                    beginAtZero: true,
+                                    ticks: { color: '#a8a8a0' },
+                                    grid: { drawOnChartArea: false },
+                                    title: {
+                                        display: true,
+                                        text: 'Geração (kW)',
+                                        color: '#4ade80'
+                                    }
+                                },
+                                x: {
+                                    ticks: { color: '#a8a8a0' },
+                                    grid: { color: 'rgba(232, 232, 224, 0.1)' }
+                                }
+                            }
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Erro ao carregar gráfico de temperatura:', error));
+    }
+    
+    // Função para carregar gráfico de comparação de parques
+    function carregarParquesComparacao() {
+        fetch('/api/charts/parques-comparacao')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('chartParquesComparacao');
+                if (ctx) {
+                    if (chartParquesComparacao) {
+                        chartParquesComparacao.destroy();
+                    }
+                    chartParquesComparacao = new Chart(ctx, {
+                        type: 'bar',
+                        data: data,
+                        options: {
+                            ...chartOptions,
+                            indexAxis: 'y'
+                        }
+                    });
+                }
+            })
+            .catch(error => console.error('Erro ao carregar gráfico de parques:', error));
+    }
+    
+    // Carregar todos os gráficos inicialmente
+    carregarGeracaoTempo(7);
+    carregarStatusPlacas();
+    carregarEficienciaHora();
+    carregarTemperaturaGeracao(7);
+    carregarParquesComparacao();
+    
+    // Event listeners para mudança de período
+    document.getElementById('periodoGeracao').addEventListener('change', function() {
+        carregarGeracaoTempo(parseInt(this.value));
+    });
+    
+    document.getElementById('periodoTempGeracao').addEventListener('change', function() {
+        carregarTemperaturaGeracao(parseInt(this.value));
+    });
+});
+</script>
+{% endblock %}
+
+

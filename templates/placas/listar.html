@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Placas Solares - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title"><i class="bi bi-sun"></i> Placas Solares</h1>
+        <p class="text-muted" style="font-size: 0.9375rem;">Gerencie todas as placas solares do sistema</p>
+    </div>
+    <div class="col-md-4 text-end d-flex align-items-end justify-content-end">
+        <a href="{{ url_for('placas.criar') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Nova Placa
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if placas_com_info %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Código de Série</th>
+                        <th>Modelo</th>
+                        <th>Potência (W)</th>
+                        <th>Tamanho (cm)</th>
+                        <th>Área (m²)</th>
+                        <th>Inversor</th>
+                        <th>Parque</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in placas_com_info %}
+                    <tr>
+                        <td><strong>{{ item.placa.codigo_serie }}</strong></td>
+                        <td>{{ item.placa.modelo }}</td>
+                        <td>{{ "%.0f"|format(item.placa.potencia_wp) }}W</td>
+                        <td>{{ "%.0f"|format(item.placa.largura_cm) }} x {{ "%.0f"|format(item.placa.altura_cm) }}</td>
+                        <td>{{ "%.2f"|format(item.placa.area_m2) }}</td>
+                        <td>{{ item.inversor_nome }}</td>
+                        <td>{{ item.parque_nome }}</td>
+                        <td>
+                            {% if item.placa.status == 'ligada' %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-power"></i> Ligada
+                                </span>
+                            {% elif item.placa.status == 'desligada' %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-power-off"></i> Desligada
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-tools"></i> Manutenção
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-{% if item.placa.status == 'ligada' %}warning{% else %}success{% endif %}" 
+                                    onclick="togglePlaca({{ item.placa.id }})"
+                                    title="{% if item.placa.status == 'ligada' %}Desligar{% else %}Ligar{% endif %}">
+                                <i class="bi bi-{% if item.placa.status == 'ligada' %}power-off{% else %}power{% endif %}"></i>
+                            </button>
+                            <a href="{{ url_for('placas.detalhes', id=item.placa.id) }}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('placas.editar', id=item.placa.id) }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('placas.excluir', id=item.placa.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" 
+                                        onclick="return confirm('Tem certeza que deseja excluir esta placa?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-sun"></i>
+            <h4>Nenhuma placa cadastrada ainda</h4>
+            <p class="mb-4">Comece criando sua primeira placa solar</p>
+            <a href="{{ url_for('placas.criar') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Criar Primeira Placa
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function togglePlaca(placaId) {
+    fetch(`/placas/toggle/${placaId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao alterar status da placa');
+    });
+}
+</script>
+{% endblock %}
+
+
+
+
+
+

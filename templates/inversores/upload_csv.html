@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Upload CSV - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1><i class="bi bi-upload"></i> Upload de Dados Históricos (CSV)</h1>
+        
+        <div class="card">
+            <div class="card-header bg-info">
+                <h5>Instruções</h5>
+            </div>
+            <div class="card-body">
+                <p>O arquivo CSV deve conter as seguintes colunas:</p>
+                <ul>
+                    <li><strong>data:</strong> Data da medição (formato: YYYY-MM-DD)</li>
+                    <li><strong>hora:</strong> Hora da medição (formato: HH:MM:SS)</li>
+                    <li><strong>geracao_kw:</strong> Geração em kW (obrigatório)</li>
+                    <li><strong>temperatura:</strong> Temperatura em °C (opcional)</li>
+                    <li><strong>tensao:</strong> Tensão em V (opcional)</li>
+                    <li><strong>corrente:</strong> Corrente em A (opcional)</li>
+                    <li><strong>frequencia:</strong> Frequência em Hz (opcional)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.inversor_id.label(class="form-label") }}
+                        {{ form.inversor_id(class="form-select") }}
+                        {% if form.inversor_id.errors %}
+                            <div class="text-danger">
+                                {% for error in form.inversor_id.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.arquivo.label(class="form-label") }}
+                        {{ form.arquivo(class="form-control", type="file", accept=".csv") }}
+                        {% if form.arquivo.errors %}
+                            <div class="text-danger">
+                                {% for error in form.arquivo.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('inversores.listar') }}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Upload
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

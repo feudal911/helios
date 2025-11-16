@@ -1,0 +1,755 @@
+{% extends "base.html" %}
+
+{% block title %}Vender Energia - HELIOS{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Remover o background padrão do body */
+    body {
+        background: transparent !important;
+        background-color: transparent !important;
+        background-image: none !important;
+    }
+    
+    /* Sobrescrever o body::before do base.html com wallpaper */
+    body::before {
+        background-image: url("{{ url_for('static', filename='images/wallpaper.jpg') }}") !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        background-attachment: fixed !important;
+        filter: blur(20px) !important;
+        -webkit-filter: blur(20px) !important;
+        opacity: 1 !important;
+        z-index: -2 !important;
+    }
+    
+    /* Adicionar overlay escuro */
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(26, 26, 26, 0.4) !important;
+        z-index: -1 !important;
+        pointer-events: none;
+    }
+    
+    main {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    .page-wrapper {
+        position: relative !important;
+        z-index: 1 !important;
+    }
+    
+    /* Calculadora técnica */
+    .calculadora-box {
+        background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-darker) 100%);
+        border: 1px solid var(--border-color);
+        border-left: 3px solid var(--primary);
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .calculadora-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(74, 158, 255, 0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    
+    .calculadora-box h3 {
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .calculadora-box h3 i {
+        color: var(--primary);
+    }
+    
+    .input-group-custom {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    
+    .input-group-custom label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+        font-weight: 500;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .input-group-custom input,
+    .input-group-custom select {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: var(--bg-darker);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 1rem;
+        font-family: 'Inter', monospace;
+        transition: all 0.3s ease;
+    }
+    
+    .input-group-custom input:focus,
+    .input-group-custom select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.15);
+        background: var(--bg-card);
+    }
+    
+    .input-group-custom input::placeholder {
+        color: var(--text-muted);
+        font-style: italic;
+    }
+    
+    /* Tabela técnica */
+    .comparacao-tabela {
+        background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-darker) 100%);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 2rem;
+        box-shadow: var(--shadow-md);
+    }
+    
+    .comparacao-tabela .card-header {
+        background: var(--bg-darker);
+        border-bottom: 2px solid var(--border-color);
+        padding: 1.5rem;
+    }
+    
+    .comparacao-tabela .card-header h5 {
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        margin: 0;
+    }
+    
+    .comparacao-tabela table {
+        width: 100%;
+        margin: 0;
+        border-collapse: collapse;
+    }
+    
+    .comparacao-tabela th {
+        background: var(--bg-darker);
+        padding: 1.25rem 1rem;
+        text-align: left;
+        border-bottom: 2px solid var(--border-color);
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-secondary);
+    }
+    
+    .comparacao-tabela td {
+        padding: 1.25rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+    }
+    
+    .comparacao-tabela tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .comparacao-tabela tbody tr:hover {
+        background: var(--bg-darker);
+        transform: translateX(2px);
+    }
+    
+    .melhor-preco {
+        background: linear-gradient(90deg, rgba(74, 222, 128, 0.15) 0%, transparent 100%) !important;
+        border-left: 4px solid var(--success);
+        position: relative;
+    }
+    
+    /* Badges técnicos */
+    .badge-tech {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Botões técnicos */
+    .btn-tech {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+    
+    .btn-tech:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
+    }
+    
+    /* Alert técnico */
+    .alert-tech {
+        background: linear-gradient(135deg, rgba(74, 158, 255, 0.1) 0%, rgba(74, 158, 255, 0.05) 100%);
+        border: 1px solid var(--primary);
+        border-left: 3px solid var(--primary);
+        border-radius: 6px;
+        padding: 1.25rem;
+        position: relative;
+    }
+    
+    .alert-tech::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, var(--primary) 0%, var(--success) 100%);
+    }
+    
+    .valor-destaque {
+        font-family: 'Inter', monospace;
+        font-weight: 700;
+        font-size: 1.5rem;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--success) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    /* Grid técnico */
+    .metric-box {
+        background: var(--bg-darker);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .metric-box:hover {
+        border-color: var(--primary);
+        transform: translateY(-2px);
+    }
+    
+    .metric-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+    
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        font-family: 'Inter', monospace;
+        color: var(--primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title"><i class="bi bi-cash-coin"></i> Vender Energia Solar</h1>
+        <p class="text-muted fs-5">Converta sua geração de energia em receita</p>
+    </div>
+</div>
+
+<!-- Calculadora -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="calculadora-box">
+            <h3 class="mb-4"><i class="bi bi-calculator"></i> Calculadora de Conversão</h3>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group-custom">
+                        <label for="kwInput">
+                            <i class="bi bi-lightning-charge"></i> Energia Gerada (kW)
+                        </label>
+                        <input type="number" 
+                               id="kwInput" 
+                               step="0.01" 
+                               min="0" 
+                               placeholder="0.00" 
+                               value="100"
+                               class="form-control">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="input-group-custom">
+                        <label for="periodoInput">
+                            <i class="bi bi-calendar-range"></i> Período de Venda
+                        </label>
+                        <select id="periodoInput" class="form-select">
+                            <option value="mensal">Mensal</option>
+                            <option value="anual">Anual</option>
+                            <option value="unico">Único</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="alert-tech">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="metric-label">Valor Total Estimado</div>
+                                <div class="valor-destaque" id="totalEstimado">R$ 0,00</div>
+                                <small class="text-muted d-block mt-2">
+                                    <i class="bi bi-info-circle"></i> Baseado na melhor oferta do mercado
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <div class="metric-box" style="min-width: 120px;">
+                                    <div class="metric-label">Melhor Preço</div>
+                                    <div class="metric-value" id="melhorPrecoKw">R$ 0,00</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="row g-2">
+                        <div class="col-12">
+                            <div class="metric-box">
+                                <div class="metric-label">kW Total</div>
+                                <div class="metric-value" id="kwTotalDisplay">0</div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="metric-box">
+                                <div class="metric-label">Empresas</div>
+                                <div class="metric-value" id="totalEmpresas">9</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela Comparativa -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="comparacao-tabela">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1"><i class="bi bi-building"></i> Empresas Compradoras</h5>
+                        <p class="text-muted mb-0" style="font-size: 0.875rem;">
+                            <i class="bi bi-arrow-down-up"></i> Comparação de preços e condições de mercado
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge-tech bg-primary">
+                            <i class="bi bi-check-circle"></i> Verificado
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Empresa</th>
+                        <th>Preço por kW</th>
+                        <th>Valor Total</th>
+                        <th>Avaliação</th>
+                        <th>Pagamento</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelaComparacao">
+                    <!-- Dados serão inseridos via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Dados das empresas compradoras REAIS no Brasil
+    const empresas = [
+        {
+            id: 1,
+            nome: 'Enel Green Power',
+            logo: '⚡',
+            precoKw: 0.52,
+            url: 'https://www.enelgreenpower.com/pt-br',
+            verificado: true,
+            premium: true,
+            descricao: 'Líder mundial em energia renovável, maior compradora do Brasil',
+            avaliacao: 4.9,
+            tempoPagamento: '10 dias',
+            site: 'enelgreenpower.com'
+        },
+        {
+            id: 2,
+            nome: 'Engie Brasil',
+            logo: '🌿',
+            precoKw: 0.48,
+            url: 'https://www.engie.com.br',
+            verificado: true,
+            premium: true,
+            descricao: 'Multinacional francesa, uma das maiores do setor energético',
+            avaliacao: 4.8,
+            tempoPagamento: '12 dias',
+            site: 'engie.com.br'
+        },
+        {
+            id: 3,
+            nome: 'EDP Brasil',
+            logo: '🔋',
+            precoKw: 0.50,
+            url: 'https://www.edp.com.br',
+            verificado: true,
+            premium: true,
+            descricao: 'Grupo português, forte presença em energia renovável',
+            avaliacao: 4.7,
+            tempoPagamento: '15 dias',
+            site: 'edp.com.br'
+        },
+        {
+            id: 4,
+            nome: 'AES Brasil',
+            logo: '☀️',
+            precoKw: 0.46,
+            url: 'https://www.aesbrasil.com.br',
+            verificado: true,
+            premium: false,
+            descricao: 'AES Corporation, investimentos em energia solar',
+            avaliacao: 4.6,
+            tempoPagamento: '18 dias',
+            site: 'aesbrasil.com.br'
+        },
+        {
+            id: 5,
+            nome: 'CPFL Energia',
+            logo: '💡',
+            precoKw: 0.44,
+            url: 'https://www.cpfl.com.br',
+            verificado: true,
+            premium: false,
+            descricao: 'Uma das maiores distribuidoras de energia do Brasil',
+            avaliacao: 4.5,
+            tempoPagamento: '20 dias',
+            site: 'cpfl.com.br'
+        },
+        {
+            id: 6,
+            nome: 'Neoenergia',
+            logo: '🌱',
+            precoKw: 0.47,
+            url: 'https://www.neoenergia.com',
+            verificado: true,
+            premium: false,
+            descricao: 'Grupo espanhol Iberdrola, foco em renováveis',
+            avaliacao: 4.7,
+            tempoPagamento: '14 dias',
+            site: 'neoenergia.com'
+        },
+        {
+            id: 7,
+            nome: 'Cemig',
+            logo: '⚡',
+            precoKw: 0.43,
+            url: 'https://www.cemig.com.br',
+            verificado: true,
+            premium: false,
+            descricao: 'Companhia Energética de Minas Gerais',
+            avaliacao: 4.4,
+            tempoPagamento: '22 dias',
+            site: 'cemig.com.br'
+        },
+        {
+            id: 8,
+            nome: 'Equatorial Energia',
+            logo: '🔌',
+            precoKw: 0.45,
+            url: 'https://www.equatorialenergia.com.br',
+            verificado: true,
+            premium: false,
+            descricao: 'Grupo Equatorial, expansão em energia renovável',
+            avaliacao: 4.6,
+            tempoPagamento: '16 dias',
+            site: 'equatorialenergia.com.br'
+        },
+        {
+            id: 9,
+            nome: 'Light',
+            logo: '💚',
+            precoKw: 0.42,
+            url: 'https://www.light.com.br',
+            verificado: true,
+            premium: false,
+            descricao: 'Distribuidora do Rio de Janeiro, mercado livre',
+            avaliacao: 4.3,
+            tempoPagamento: '25 dias',
+            site: 'light.com.br'
+        }
+    ];
+    
+    // Ordenar empresas por preço (maior primeiro)
+    empresas.sort((a, b) => (b.precoKw || 0) - (a.precoKw || 0));
+    
+    let kwAtual = 100;
+    
+    // Inicializar kwAtual do input se existir
+    const kwInput = document.getElementById('kwInput');
+    if (kwInput) {
+        kwAtual = parseFloat(kwInput.value) || 100;
+    }
+    
+    // Função para formatar moeda
+    function formatarMoeda(valor) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(valor);
+    }
+    
+    // Função para calcular valor total
+    function calcularValor(kw, precoKw) {
+        return kw * precoKw;
+    }
+    
+    // Função para renderizar empresas (apenas tabela)
+    function renderizarEmpresas() {
+        atualizarTabelaComparacao();
+    }
+    
+    // Função para atualizar tabela comparativa
+    function atualizarTabelaComparacao() {
+        const tbody = document.getElementById('tabelaComparacao');
+        if (!tbody) {
+            console.error('Tabela de comparação não encontrada');
+            return;
+        }
+        
+        tbody.innerHTML = '';
+        
+        if (!empresas || empresas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">Nenhuma empresa disponível</td></tr>';
+            return;
+        }
+        
+        empresas.forEach((empresa, index) => {
+            const valorTotal = calcularValor(kwAtual, empresa.precoKw);
+            const isMelhorPreco = index === 0;
+            
+            const row = document.createElement('tr');
+            if (isMelhorPreco) row.classList.add('melhor-preco');
+            
+            // Criar células individualmente para evitar problemas com template strings
+            const tdEmpresa = document.createElement('td');
+            tdEmpresa.innerHTML = `
+                <strong>${empresa.nome || 'N/A'}</strong>
+                ${empresa.verificado ? '<span class="badge bg-success ms-2"><i class="bi bi-check-circle"></i> Verificado</span>' : ''}
+                ${empresa.premium ? '<span class="badge bg-warning ms-2"><i class="bi bi-star-fill"></i> Premium</span>' : ''}
+                <br><small class="text-muted">${empresa.descricao || ''}</small>
+            `;
+            
+            const tdPreco = document.createElement('td');
+            tdPreco.innerHTML = `<strong style="color: var(--success); font-size: 1.1rem;">${formatarMoeda(empresa.precoKw || 0)}</strong>`;
+            
+            const tdTotal = document.createElement('td');
+            tdTotal.innerHTML = `<strong class="text-primary" style="font-size: 1.1rem;">${formatarMoeda(valorTotal)}</strong>`;
+            
+            const tdAvaliacao = document.createElement('td');
+            tdAvaliacao.innerHTML = `<i class="bi bi-star-fill" style="color: var(--warning);"></i> ${empresa.avaliacao || 0}/5.0`;
+            
+            const tdPagamento = document.createElement('td');
+            tdPagamento.innerHTML = `<i class="bi bi-clock"></i> ${empresa.tempoPagamento || 'N/A'}`;
+            
+            const tdStatus = document.createElement('td');
+            const statusClass = empresa.verificado ? 'success' : 'secondary';
+            const statusText = empresa.verificado ? 'Ativo' : 'Pendente';
+            tdStatus.innerHTML = `<span class="badge bg-${statusClass}">${statusText}</span>`;
+            
+            const tdAcao = document.createElement('td');
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-sm btn-primary btn-tech';
+            btn.innerHTML = '<i class="bi bi-arrow-right"></i> Vender';
+            btn.onclick = function() {
+                venderEnergia(empresa.url, empresa.id, kwAtual);
+            };
+            tdAcao.appendChild(btn);
+            
+            row.appendChild(tdEmpresa);
+            row.appendChild(tdPreco);
+            row.appendChild(tdTotal);
+            row.appendChild(tdAvaliacao);
+            row.appendChild(tdPagamento);
+            row.appendChild(tdStatus);
+            row.appendChild(tdAcao);
+            
+            tbody.appendChild(row);
+        });
+    }
+    
+    // Função para atualizar total estimado
+    function atualizarTotalEstimado() {
+        const melhorPreco = empresas[0].precoKw;
+        const total = calcularValor(kwAtual, melhorPreco);
+        document.getElementById('totalEstimado').textContent = formatarMoeda(total);
+        document.getElementById('melhorPrecoKw').textContent = formatarMoeda(melhorPreco);
+        document.getElementById('kwTotalDisplay').textContent = kwAtual.toFixed(2);
+        document.getElementById('totalEmpresas').textContent = empresas.length;
+    }
+    
+    // Função para vender energia (redireciona para empresa)
+    window.venderEnergia = function(url, empresaId, kw) {
+        if (!url || !empresaId) {
+            console.error('URL ou ID da empresa inválido');
+            return;
+        }
+        
+        // Criar dados para enviar
+        const dados = {
+            kw: kw || kwAtual,
+            empresa_id: empresaId,
+            timestamp: new Date().toISOString(),
+            origem: 'HELIOS'
+        };
+        
+        // Salvar dados no localStorage para referência
+        try {
+            localStorage.setItem('venda_energia', JSON.stringify(dados));
+        } catch (e) {
+            console.warn('Não foi possível salvar no localStorage:', e);
+        }
+        
+        // Confirmar antes de redirecionar
+        const empresa = empresas.find(e => e.id === empresaId);
+        if (!empresa) {
+            alert('Empresa não encontrada');
+            return;
+        }
+        
+        const valorTotal = calcularValor(kw || kwAtual, empresa.precoKw || 0);
+        const mensagem = `Você está prestes a ser redirecionado para ${empresa.nome}.\n\nValor estimado: ${formatarMoeda(valorTotal)}\n\nDeseja continuar?`;
+        
+        if (confirm(mensagem)) {
+            // Abrir em nova aba
+            try {
+                window.open(url, '_blank');
+                mostrarNotificacao(`Redirecionando para ${empresa.nome}...`, 'success');
+            } catch (e) {
+                console.error('Erro ao abrir URL:', e);
+                alert('Erro ao abrir o site da empresa. Por favor, tente novamente.');
+            }
+        }
+    };
+    
+    // Função para mostrar notificação
+    function mostrarNotificacao(mensagem, tipo) {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${tipo === 'success' ? 'var(--success)' : 'var(--primary)'};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+        `;
+        notification.innerHTML = `<i class="bi bi-${tipo === 'success' ? 'check-circle' : 'info-circle'}"></i> ${mensagem}`;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+    
+    // Event listeners
+    const kwInputEl = document.getElementById('kwInput');
+    if (kwInputEl) {
+        kwInputEl.addEventListener('input', function() {
+            kwAtual = parseFloat(this.value) || 0;
+            if (kwAtual < 0) kwAtual = 0;
+            renderizarEmpresas();
+            atualizarTotalEstimado();
+        });
+    }
+    
+    const periodoInputEl = document.getElementById('periodoInput');
+    if (periodoInputEl) {
+        periodoInputEl.addEventListener('change', function() {
+            atualizarTotalEstimado();
+        });
+    }
+    
+    // Adicionar animação CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Aguardar um pouco para garantir que o DOM está pronto
+    setTimeout(function() {
+        renderizarEmpresas();
+        atualizarTotalEstimado();
+    }, 100);
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes da Placa - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title"><i class="bi bi-sun"></i> Detalhes da Placa Solar</h1>
+        <p class="text-muted" style="font-size: 0.9375rem;">Informações completas da placa</p>
+    </div>
+    <div class="col-md-4 text-end d-flex align-items-end justify-content-end gap-2">
+        <button class="btn btn-{% if placa.status == 'ligada' %}warning{% else %}success{% endif %} btn-lg" 
+                onclick="togglePlaca({{ placa.id }})">
+            <i class="bi bi-{% if placa.status == 'ligada' %}power-off{% else %}power{% endif %}"></i>
+            {% if placa.status == 'ligada' %}Desligar{% else %}Ligar{% endif %}
+        </button>
+        <a href="{{ url_for('placas.editar', id=placa.id) }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{{ url_for('placas.mapeamento') }}" class="btn btn-secondary btn-lg">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle"></i> Informações Básicas</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="40%">Código de Série:</th>
+                        <td><strong>{{ placa.codigo_serie }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Modelo:</th>
+                        <td>{{ placa.modelo }}</td>
+                    </tr>
+                    <tr>
+                        <th>Fabricante:</th>
+                        <td>{{ placa.fabricante or 'N/A' }}</td>
+                    </tr>
+                    <tr>
+                        <th>Status:</th>
+                        <td>
+                            {% if placa.status == 'ligada' %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-power"></i> Ligada
+                                </span>
+                            {% elif placa.status == 'desligada' %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-power-off"></i> Desligada
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning">
+                                    <i class="bi bi-tools"></i> Manutenção
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Data de Instalação:</th>
+                        <td>{{ placa.data_instalacao.strftime('%d/%m/%Y') }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning-charge"></i> Especificações Técnicas</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="40%">Potência (Wp):</th>
+                        <td><strong>{{ "%.0f"|format(placa.potencia_wp) }}W</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Dimensões:</th>
+                        <td>{{ "%.0f"|format(placa.largura_cm) }}cm x {{ "%.0f"|format(placa.altura_cm) }}cm</td>
+                    </tr>
+                    <tr>
+                        <th>Área:</th>
+                        <td><strong>{{ "%.2f"|format(placa.area_m2) }} m²</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Eficiência:</th>
+                        <td>{{ "%.1f"|format(placa.eficiencia) if placa.eficiencia else 'N/A' }}%</td>
+                    </tr>
+                    <tr>
+                        <th>Tensão Nominal:</th>
+                        <td>{{ "%.1f"|format(placa.tensao_nominal) if placa.tensao_nominal else 'N/A' }}V</td>
+                    </tr>
+                    <tr>
+                        <th>Corrente Máxima:</th>
+                        <td>{{ "%.2f"|format(placa.corrente_max) if placa.corrente_max else 'N/A' }}A</td>
+                    </tr>
+                    <tr>
+                        <th>Temperatura Máx:</th>
+                        <td>{{ "%.0f"|format(placa.temperatura_max) if placa.temperatura_max else 'N/A' }}°C</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-geo-alt"></i> Localização</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="40%">Inversor:</th>
+                        <td>
+                            <a href="{{ url_for('inversores.detalhes', id=placa.inversor.id) if placa.inversor else '#' }}">
+                                {{ placa.inversor.codigo_serie if placa.inversor else 'N/A' }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Parque:</th>
+                        <td>
+                            {% if placa.inversor and placa.inversor.parque %}
+                                <a href="{{ url_for('parques.detalhes', id=placa.inversor.parque.id) }}">
+                                    {{ placa.inversor.parque.nome }}
+                                </a>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Posição no Grid:</th>
+                        <td><strong>X: {{ placa.posicao_x }}, Y: {{ placa.posicao_y }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <td>
+                            {% if placa.inversor %}
+                                <a href="{{ url_for('placas.grid', inversor_id=placa.inversor.id) }}" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-grid-3x3"></i> Ver no Grid
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    {% if placa.observacoes %}
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-text"></i> Observações</h5>
+            </div>
+            <div class="card-body">
+                <p>{{ placa.observacoes }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function togglePlaca(placaId) {
+    if (confirm('Tem certeza que deseja alterar o status desta placa?')) {
+        fetch(`/placas/toggle/${placaId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao alterar status da placa');
+        });
+    }
+}
+</script>
+{% endblock %}
+
+
+
+
+
+

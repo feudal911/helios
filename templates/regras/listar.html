@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Regras de Alerta - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title"><i class="bi bi-shield-check"></i> Regras de Performance e Alertas</h1>
+        <p class="text-muted" style="font-size: 0.9375rem;">Configure regras de monitoramento e alertas</p>
+    </div>
+    <div class="col-md-4 text-end d-flex align-items-end justify-content-end">
+        <a href="{{ url_for('regras.criar') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Nova Regra
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if regras %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Tipo</th>
+                        <th>Condição</th>
+                        <th>Severidade</th>
+                        <th>Status</th>
+                        <th>Alertas Ativos</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for regra in regras %}
+                    <tr>
+                        <td><strong>{{ regra.nome }}</strong></td>
+                        <td>{{ regra.tipo|title }}</td>
+                        <td>{{ regra.operador }} {{ regra.valor_threshold }}</td>
+                        <td>
+                            {% if regra.severidade == 'critica' %}
+                                <span class="badge bg-danger">{{ regra.severidade|title }}</span>
+                            {% elif regra.severidade == 'alta' %}
+                                <span class="badge bg-warning">{{ regra.severidade|title }}</span>
+                            {% elif regra.severidade == 'media' %}
+                                <span class="badge bg-info">{{ regra.severidade|title }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ regra.severidade|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if regra.ativo %}
+                                <span class="badge bg-success">Ativa</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Inativa</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ regra.total_alertas }}</td>
+                        <td>
+                            <a href="{{ url_for('regras.detalhes', id=regra.id) }}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('regras.editar', id=regra.id) }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('regras.ativar', id=regra.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-{{ 'secondary' if regra.ativo else 'success' }}">
+                                    <i class="bi bi-{{ 'toggle-on' if regra.ativo else 'toggle-off' }}"></i>
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('regras.excluir', id=regra.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" 
+                                        onclick="return confirm('Tem certeza que deseja excluir esta regra?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-shield-check"></i>
+            <h4>Nenhuma regra cadastrada ainda</h4>
+            <p class="mb-4">Configure regras de monitoramento para receber alertas</p>
+            <a href="{{ url_for('regras.criar') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Criar Primeira Regra
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

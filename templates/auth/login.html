@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Login - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3 class="mb-0" style="font-weight: 500; font-size: 1.5rem;"><i class="bi bi-box-arrow-in-right"></i> Login</h3>
+                <p class="mb-0 mt-2" style="opacity: 0.6; font-size: 0.875rem;">Acesse sua conta para continuar</p>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.username.label(class="form-label") }}
+                        {{ form.username(class="form-control") }}
+                        {% if form.username.errors %}
+                            <div class="text-danger">
+                                {% for error in form.username.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.senha.label(class="form-label") }}
+                        {{ form.senha(class="form-control") }}
+                        {% if form.senha.errors %}
+                            <div class="text-danger">
+                                {% for error in form.senha.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3 form-check">
+                        {{ form.lembreme(class="form-check-input") }}
+                        {{ form.lembreme.label(class="form-check-label") }}
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Entrar
+                        </button>
+                    </div>
+                </form>
+                <hr>
+                <div class="text-center">
+                    <p>Não tem uma conta? <a href="{{ url_for('auth.cadastro') }}">Cadastre-se</a></p>
+                    <p><a href="{{ url_for('auth.recuperar_senha') }}">Esqueceu sua senha?</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

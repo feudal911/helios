@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1><i class="bi bi-shield-check"></i> {{ titulo }}</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.nome.label(class="form-label") }}
+                        {{ form.nome(class="form-control") }}
+                        {% if form.nome.errors %}
+                            <div class="text-danger">
+                                {% for error in form.nome.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.descricao.label(class="form-label") }}
+                        {{ form.descricao(class="form-control", rows="3") }}
+                        {% if form.descricao.errors %}
+                            <div class="text-danger">
+                                {% for error in form.descricao.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.tipo.label(class="form-label") }}
+                            {{ form.tipo(class="form-select") }}
+                            {% if form.tipo.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.tipo.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.operador.label(class="form-label") }}
+                            {{ form.operador(class="form-select") }}
+                            {% if form.operador.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.operador.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.valor_threshold.label(class="form-label") }}
+                            {{ form.valor_threshold(class="form-control") }}
+                            {% if form.valor_threshold.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.valor_threshold.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.severidade.label(class="form-label") }}
+                            {{ form.severidade(class="form-select") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check mt-4">
+                                {{ form.ativo(class="form-check-input") }}
+                                {{ form.ativo.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('regras.listar') }}" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Mapeamento de Placas Solares - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title"><i class="bi bi-grid-3x3-gap"></i> Mapeamento de Placas Solares</h1>
+        <p class="text-muted" style="font-size: 0.9375rem;">Visualize e gerencie todas as placas solares do sistema</p>
+    </div>
+    <div class="col-md-4 text-end d-flex align-items-end justify-content-end gap-2">
+        <a href="{{ url_for('placas.criar') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Nova Placa
+        </a>
+        <a href="{{ url_for('placas.listar') }}" class="btn btn-secondary btn-lg">
+            <i class="bi bi-list"></i> Lista
+        </a>
+    </div>
+</div>
+
+<!-- Estatísticas -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="stats-card">
+            <div class="text-center">
+                <i class="bi bi-sun"></i>
+                <h2 class="display-4">{{ total_placas }}</h2>
+                <p><i class="bi bi-sun"></i> Total de Placas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stats-card success">
+            <div class="text-center">
+                <i class="bi bi-power" style="font-size: 2rem; color: var(--success); margin-bottom: 0.75rem; opacity: 0.8;"></i>
+                <h2 class="display-4">{{ placas_ligadas }}</h2>
+                <p><i class="bi bi-power"></i> Placas Ligadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stats-card warning">
+            <div class="text-center">
+                <i class="bi bi-power-off" style="font-size: 2rem; color: var(--warning); margin-bottom: 0.75rem; opacity: 0.8;"></i>
+                <h2 class="display-4">{{ placas_desligadas }}</h2>
+                <p><i class="bi bi-power-off"></i> Placas Desligadas</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="stats-card info">
+            <div class="text-center">
+                <i class="bi bi-lightning-charge" style="font-size: 2rem; color: var(--info); margin-bottom: 0.75rem; opacity: 0.8;"></i>
+                <h2 class="display-4">{{ "%.1f"|format(potencia_total / 1000) }}</h2>
+                <p><i class="bi bi-lightning-charge"></i> Potência Total (kW)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mapeamento por Parque -->
+{% for parque_id, dados in placas_por_parque.items() %}
+    {% if dados.inversores %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-building"></i> {{ dados.parque.nome }}
+                <span class="badge bg-secondary ms-2">{{ dados.parque.localizacao }}</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% for inversor_id, inv_data in dados.inversores.items() %}
+                <div class="mb-4 pb-4 border-bottom">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">
+                            <i class="bi bi-cpu"></i> Inversor: {{ inv_data.inversor.codigo_serie }}
+                            <span class="badge bg-info ms-2">{{ inv_data.inversor.modelo }}</span>
+                        </h6>
+                        <a href="{{ url_for('placas.grid', inversor_id=inv_data.inversor.id) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-grid-3x3"></i> Ver Grid
+                        </a>
+                    </div>
+                    
+                    <!-- Grid de Placas -->
+                    <div class="placas-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px;">
+                        {% for placa in inv_data.placas %}
+                            <div class="placa-card" 
+                                 data-placa-id="{{ placa.id }}"
+                                 style="
+                                     background: {% if placa.status == 'ligada' %}rgba(52, 199, 89, 0.2){% elif placa.status == 'desligada' %}rgba(142, 142, 147, 0.2){% else %}rgba(255, 149, 0, 0.2){% endif %};
+                                     border: 2px solid {% if placa.status == 'ligada' %}#34C759{% elif placa.status == 'desligada' %}#8E8E93{% else %}#FF9500{% endif %};
+                                     border-radius: 8px;
+                                     padding: 12px;
+                                     cursor: pointer;
+                                     transition: all 0.3s ease;
+                                     position: relative;
+                                     min-height: 100px;
+                                 "
+                                 onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'"
+                                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none'"
+                                 onclick="showPlacaDetails({{ placa.id }})">
+                                <div class="text-center">
+                                    <i class="bi bi-sun-fill" style="font-size: 1.5rem; color: {% if placa.status == 'ligada' %}#34C759{% elif placa.status == 'desligada' %}#8E8E93{% else %}#FF9500{% endif %};"></i>
+                                    <div class="mt-2">
+                                        <small class="d-block fw-bold">{{ placa.codigo_serie[:8] }}...</small>
+                                        <small class="d-block text-muted">{{ "%.0f"|format(placa.potencia_wp) }}W</small>
+                                        <small class="d-block text-muted">{{ "%.2f"|format(placa.area_m2) }}m²</small>
+                                        <span class="badge bg-{% if placa.status == 'ligada' %}success{% elif placa.status == 'desligada' %}secondary{% else %}warning{% endif %} mt-1">
+                                            {% if placa.status == 'ligada' %}
+                                                <i class="bi bi-power"></i> Ligada
+                                            {% elif placa.status == 'desligada' %}
+                                                <i class="bi bi-power-off"></i> Desligada
+                                            {% else %}
+                                                <i class="bi bi-tools"></i> Manutenção
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="position-absolute top-0 end-0 m-1">
+                                        <button class="btn btn-sm btn-{% if placa.status == 'ligada' %}warning{% else %}success{% endif %}" 
+                                                onclick="event.stopPropagation(); togglePlaca({{ placa.id }})"
+                                                title="{% if placa.status == 'ligada' %}Desligar{% else %}Ligar{% endif %}">
+                                            <i class="bi bi-{% if placa.status == 'ligada' %}power-off{% else %}power{% endif %}"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+{% endfor %}
+
+{% if total_placas == 0 %}
+<div class="empty-state">
+    <i class="bi bi-sun"></i>
+    <h4>Nenhuma placa cadastrada ainda</h4>
+    <p class="mb-4">Comece criando sua primeira placa solar</p>
+    <a href="{{ url_for('placas.criar') }}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-circle"></i> Criar Primeira Placa
+    </a>
+</div>
+{% endif %}
+
+<!-- Modal de Detalhes -->
+<div class="modal fade" id="placaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes da Placa Solar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="placaModalBody">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePlaca(placaId) {
+    fetch(`/placas/toggle/${placaId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erro: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('Erro ao alterar status da placa');
+    });
+}
+
+function showPlacaDetails(placaId) {
+    window.location.href = `/placas/detalhes/${placaId}`;
+}
+</script>
+
+<style>
+.placa-card {
+    animation: scaleIn 0.4s ease-out backwards;
+}
+
+.placa-card:nth-child(1) { animation-delay: 0.05s; }
+.placa-card:nth-child(2) { animation-delay: 0.1s; }
+.placa-card:nth-child(3) { animation-delay: 0.15s; }
+.placa-card:nth-child(4) { animation-delay: 0.2s; }
+.placa-card:nth-child(5) { animation-delay: 0.25s; }
+.placa-card:nth-child(6) { animation-delay: 0.3s; }
+</style>
+{% endblock %}
+

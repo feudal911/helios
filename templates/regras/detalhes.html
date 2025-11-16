@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes da Regra - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="bi bi-shield-check"></i> {{ regra.nome }}</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('regras.editar', id=regra.id) }}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{{ url_for('regras.listar') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Informações da Regra</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Nome:</strong> {{ regra.nome }}</p>
+                <p><strong>Descrição:</strong> {{ regra.descricao }}</p>
+                <p><strong>Tipo:</strong> {{ regra.tipo|title }}</p>
+                <p><strong>Condição:</strong> {{ regra.tipo|title }} {{ regra.operador }} {{ regra.valor_threshold }}</p>
+                <p><strong>Severidade:</strong> 
+                    {% if regra.severidade == 'critica' %}
+                        <span class="badge bg-danger">{{ regra.severidade|title }}</span>
+                    {% elif regra.severidade == 'alta' %}
+                        <span class="badge bg-warning">{{ regra.severidade|title }}</span>
+                    {% elif regra.severidade == 'media' %}
+                        <span class="badge bg-info">{{ regra.severidade|title }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ regra.severidade|title }}</span>
+                    {% endif %}
+                </p>
+                <p><strong>Status:</strong> 
+                    {% if regra.ativo %}
+                        <span class="badge bg-success">Ativa</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inativa</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Alertas Gerados por Esta Regra</h5>
+            </div>
+            <div class="card-body">
+                {% if alertas %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Inversor</th>
+                                <th>Mensagem</th>
+                                <th>Severidade</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alerta in alertas %}
+                            <tr>
+                                <td>{{ alerta.inversor.codigo_serie }}</td>
+                                <td>{{ alerta.mensagem }}</td>
+                                <td>
+                                    {% if alerta.severidade == 'critica' %}
+                                        <span class="badge bg-danger">{{ alerta.severidade|title }}</span>
+                                    {% elif alerta.severidade == 'alta' %}
+                                        <span class="badge bg-warning">{{ alerta.severidade|title }}</span>
+                                    {% elif alerta.severidade == 'media' %}
+                                        <span class="badge bg-info">{{ alerta.severidade|title }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ alerta.severidade|title }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if alerta.resolvido %}
+                                        <span class="badge bg-success">Resolvido</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Ativo</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ alerta.criado_em.strftime('%d/%m/%Y %H:%M') }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Nenhum alerta gerado por esta regra ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

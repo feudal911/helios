@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Detalhes do Inversor - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="bi bi-cpu"></i> {{ inversor.codigo_serie }}</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{{ url_for('inversores.editar', id=inversor.id) }}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{{ url_for('inversores.upload_csv') }}?inversor_id={{ inversor.id }}" class="btn btn-success">
+            <i class="bi bi-upload"></i> Upload CSV
+        </a>
+        <a href="{{ url_for('inversores.listar') }}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Informações do Inversor</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Código de Série:</strong> {{ inversor.codigo_serie }}</p>
+                <p><strong>Modelo:</strong> {{ inversor.modelo }}</p>
+                <p><strong>Capacidade:</strong> {{ "%.2f"|format(inversor.capacidade_kw) }} kW</p>
+                <p><strong>Parque:</strong> {{ inversor.parque.nome }}</p>
+                <p><strong>Data de Instalação:</strong> {{ inversor.data_instalacao.strftime('%d/%m/%Y') }}</p>
+                <p><strong>Status:</strong> 
+                    {% if inversor.status == 'operacional' %}
+                        <span class="badge bg-success">{{ inversor.status|title }}</span>
+                    {% elif inversor.status == 'manutencao' %}
+                        <span class="badge bg-warning">{{ inversor.status|title }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ inversor.status|title }}</span>
+                    {% endif %}
+                </p>
+                {% if inversor.localizacao_fisica %}
+                <p><strong>Localização Física:</strong> {{ inversor.localizacao_fisica }}</p>
+                {% endif %}
+                <p><strong>Eficiência Atual:</strong> 
+                    {% if eficiencia < 80 %}
+                        <span class="text-danger">{{ "%.1f"|format(eficiencia) }}%</span>
+                    {% elif eficiencia < 90 %}
+                        <span class="text-warning">{{ "%.1f"|format(eficiencia) }}%</span>
+                    {% else %}
+                        <span class="text-success">{{ "%.1f"|format(eficiencia) }}%</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Últimas Medições</h5>
+            </div>
+            <div class="card-body">
+                {% if medicoes %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Hora</th>
+                                <th>Geração (kW)</th>
+                                <th>Temperatura (°C)</th>
+                                <th>Eficiência (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for med in medicoes %}
+                            <tr>
+                                <td>{{ med.data_medicao.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ med.hora_medicao.strftime('%H:%M:%S') }}</td>
+                                <td>{{ "%.2f"|format(med.geracao_kw) }}</td>
+                                <td>{{ "%.1f"|format(med.temperatura) if med.temperatura else '-' }}</td>
+                                <td>{{ "%.1f"|format(med.eficiencia) if med.eficiencia else '-' }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Nenhuma medição registrada ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

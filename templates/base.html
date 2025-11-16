@@ -1,0 +1,1836 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HELIOS{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            /* Cores baseadas na imagem - Dark Charcoal e Off-White */
+            --bg-dark: #1a1a1a;
+            --bg-darker: #0f0f0f;
+            --bg-card: #252525;
+            --bg-card-hover: #2d2d2d;
+            --text-primary: #e8e8e0;
+            --text-secondary: #a8a8a0;
+            --text-muted: #6b6b65;
+            --border-color: rgba(232, 232, 224, 0.1);
+            --border-hover: rgba(232, 232, 224, 0.2);
+            
+            /* Cores de destaque - mais sutis e técnicas */
+            --primary: #4a9eff;
+            --primary-hover: #5aa8ff;
+            --success: #4ade80;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --info: #60a5fa;
+            
+            /* Sombras sutis */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+            
+            /* Gradientes sutis */
+            --gradient-primary: linear-gradient(135deg, #4a9eff 0%, #3b82f6 100%);
+            --gradient-success: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+        
+        /* FORÇAR TEMA ESCURO - Sobrescrever Bootstrap */
+        html {
+            background: var(--bg-dark) !important;
+            background-color: var(--bg-dark) !important;
+        }
+        
+        body {
+            background: var(--bg-dark) !important;
+            background-color: var(--bg-dark) !important;
+        }
+        
+        /* Sobrescrever TODOS os elementos que podem ter fundo branco */
+        .bg-white,
+        .bg-light,
+        .table-light,
+        .list-group-item-light,
+        [class*="bg-white"],
+        [class*="bg-light"] {
+            background-color: var(--bg-card) !important;
+            background: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: var(--bg-dark) !important;
+            background-color: var(--bg-dark) !important;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(74, 158, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(74, 222, 128, 0.02) 0%, transparent 50%) !important;
+            min-height: 100vh;
+            color: var(--text-primary) !important;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-weight: 400;
+            line-height: 1.6;
+            letter-spacing: -0.01em;
+        }
+        
+        /* Garantir que TODOS os elementos dentro do body usem cores corretas */
+        body *:not(.btn):not(.badge):not(.alert):not(.dropdown-menu):not(.form-control):not(.form-select):not(.progress):not(.progress-bar):not(.card):not(.navbar):not(.stats-card):not(.table):not(.table-responsive) {
+            background-color: transparent !important;
+        }
+        
+        /* Forçar cores de texto em elementos específicos */
+        body p, body span, body div, body h1, body h2, body h3, body h4, body h5, body h6 {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Sobrescrever todos os elementos do Bootstrap que podem ter fundo branco */
+        .bg-white,
+        .bg-light,
+        .table-light,
+        .list-group-item-light {
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* Garantir que todos os elementos principais usem o tema escuro */
+        html {
+            background: var(--bg-dark) !important;
+        }
+        
+        main {
+            background: transparent !important;
+        }
+        
+        .container,
+        .container-fluid {
+            background: transparent !important;
+        }
+        
+        .row {
+            background: transparent !important;
+        }
+        
+        [class*="col-"] {
+            background: transparent !important;
+        }
+        
+        /* Sobrescrever estilos padrão do Bootstrap */
+        .table-hover > tbody > tr:hover {
+            background-color: var(--bg-card-hover) !important;
+        }
+        
+        .table-hover > tbody > tr:hover > td {
+            color: var(--text-primary) !important;
+        }
+        
+        .table-responsive {
+            background: transparent !important;
+        }
+        
+        .empty-state {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+        }
+        
+        .empty-state h4 {
+            color: var(--text-primary) !important;
+        }
+        
+        .empty-state p {
+            color: var(--text-secondary) !important;
+        }
+        
+        /* Garantir que todos os elementos de formulário usem o tema escuro */
+        label,
+        .form-label {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Garantir que elementos sem background explícito não fiquem brancos */
+        div:not(.card):not(.navbar):not(.stats-card):not(.btn):not(.badge):not(.alert):not(.dropdown-menu):not(.form-control):not(.form-select):not(.progress):not(.progress-bar) {
+            background-color: transparent !important;
+        }
+        
+        /* Garantir que elementos específicos do Bootstrap não tenham fundo branco */
+        .mb-0, .mb-1, .mb-2, .mb-3, .mb-4, .mb-5,
+        .mt-0, .mt-1, .mt-2, .mt-3, .mt-4, .mt-5,
+        .p-0, .p-1, .p-2, .p-3, .p-4, .p-5,
+        .text-center, .text-start, .text-end,
+        .d-flex, .d-grid, .d-block, .d-inline,
+        .justify-content-center, .justify-content-between, .justify-content-end,
+        .align-items-center, .align-items-end,
+        .gap-2, .gap-3 {
+            background: transparent !important;
+        }
+        
+        /* Garantir que elementos específicos não tenham fundo branco */
+        .card-body,
+        .card-header,
+        .card-footer {
+            background: transparent !important;
+        }
+        
+        .p-0,
+        .p-1,
+        .p-2,
+        .p-3,
+        .p-4,
+        .p-5 {
+            background: transparent !important;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(232, 232, 224, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(232, 232, 224, 0.02) 1px, transparent 1px);
+            background-size: 24px 24px;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+        
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 5px rgba(0, 122, 255, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 20px rgba(0, 122, 255, 0.6), 0 0 30px rgba(0, 122, 255, 0.4);
+            }
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .animate-on-scroll {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .animate-on-scroll.delay-1 { animation-delay: 0.1s; }
+        .animate-on-scroll.delay-2 { animation-delay: 0.2s; }
+        .animate-on-scroll.delay-3 { animation-delay: 0.3s; }
+        .animate-on-scroll.delay-4 { animation-delay: 0.4s; }
+        
+        .page-wrapper {
+            background: transparent;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .navbar {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-md);
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--text-primary) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            letter-spacing: -0.02em;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+        
+        .navbar-brand:hover {
+            color: var(--text-primary) !important;
+            opacity: 0.9;
+        }
+        
+        .navbar-brand img {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            transition: transform 0.2s ease;
+            filter: brightness(1.1);
+            display: block;
+        }
+        
+        .navbar-brand:hover img {
+            transform: scale(1.05);
+        }
+        
+        .navbar-brand .logo-text {
+            font-weight: 600;
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+        
+        .navbar-nav .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 400;
+            font-size: 0.875rem;
+            margin: 0 0.25rem;
+            padding: 0.5rem 1rem !important;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary) !important;
+        }
+        
+        .navbar-nav .nav-link.active {
+            color: var(--primary) !important;
+            background: rgba(74, 158, 255, 0.1);
+        }
+        
+        .navbar-nav .nav-link.dropdown-toggle::after {
+            display: none;
+        }
+        
+        .navbar-toggler {
+            border: 1px solid var(--border-color);
+            padding: 0.375rem 0.5rem;
+            border-radius: 6px;
+        }
+        
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1);
+        }
+        
+        .navbar-toggler-icon {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(232, 232, 224, 0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        
+        .card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+            overflow: hidden;
+            background: var(--bg-card);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        
+        .card:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.2s; }
+        .card:nth-child(3) { animation-delay: 0.3s; }
+        .card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .card-header {
+            background: transparent;
+            color: var(--text-primary);
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            letter-spacing: -0.01em;
+        }
+        
+        .card-header h5 {
+            font-weight: 500;
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+            background: transparent;
+        }
+        
+        .btn {
+            border-radius: 6px;
+            padding: 0.625rem 1.25rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            letter-spacing: -0.01em;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            border-color: var(--primary-hover);
+            color: white;
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #3bc970;
+            border-color: #3bc970;
+        }
+        
+        .btn-warning {
+            background: var(--warning);
+            color: var(--bg-dark);
+            border-color: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background: #f9a825;
+            border-color: #f9a825;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background: #f96262;
+            border-color: #f96262;
+        }
+        
+        .btn-info {
+            background: var(--info);
+            color: white;
+            border-color: var(--info);
+        }
+        
+        .btn-info:hover {
+            background: #4d9ef9;
+            border-color: #4d9ef9;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+        }
+        
+        .btn-light {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-light:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+        }
+        
+        .btn-outline-light {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-outline-light:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-hover);
+        }
+        
+        .stats-card {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .stats-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .stats-card.success {
+            border-left: 3px solid var(--success);
+        }
+        
+        .stats-card.warning {
+            border-left: 3px solid var(--warning);
+        }
+        
+        .stats-card.info {
+            border-left: 3px solid var(--info);
+        }
+        
+        .stats-card .display-4 {
+            font-weight: 600;
+            font-size: 2rem;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .stats-card p {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin: 0.5rem 0 0 0;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .stats-card i {
+            opacity: 0.6;
+            margin-bottom: 0.75rem;
+            font-size: 1.75rem;
+        }
+        
+        .stats-card:nth-child(1) { animation-delay: 0.1s; }
+        .stats-card:nth-child(2) { animation-delay: 0.2s; }
+        .stats-card:nth-child(3) { animation-delay: 0.3s; }
+        .stats-card:nth-child(4) { animation-delay: 0.4s; }
+        
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+        
+        .table thead {
+            background: transparent;
+            color: var(--text-primary);
+        }
+        
+        .table thead th {
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0.875rem 1.25rem;
+            font-weight: 500;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+        
+        .table tbody tr {
+            transition: all 0.15s ease;
+            background: transparent;
+        }
+        
+        .table tbody tr:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        .table tbody td {
+            padding: 1rem 1.25rem;
+            vertical-align: middle;
+            border-color: var(--border-color);
+            color: var(--text-primary) !important;
+            font-size: 0.875rem;
+            background: transparent !important;
+        }
+        
+        .table-borderless td,
+        .table-borderless th {
+            border: none !important;
+            color: var(--text-primary) !important;
+            background: transparent !important;
+        }
+        
+        .table-borderless th {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+        }
+        
+        .badge {
+            padding: 0.375rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.75rem;
+            letter-spacing: 0.02em;
+            transition: all 0.2s ease;
+            display: inline-block;
+        }
+        
+        .badge.bg-success {
+            background: var(--success) !important;
+            color: white;
+        }
+        
+        .badge.bg-warning {
+            background: var(--warning) !important;
+            color: var(--bg-dark);
+        }
+        
+        .badge.bg-danger {
+            background: var(--danger) !important;
+            color: white;
+        }
+        
+        .badge.bg-info {
+            background: var(--info) !important;
+            color: white;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            padding: 0.625rem 1rem;
+            transition: all 0.2s ease;
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1);
+            outline: none;
+            background: var(--bg-card-hover);
+        }
+        
+        .form-control:hover, .form-select:hover {
+            border-color: var(--border-hover);
+        }
+        
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .form-check-input {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .form-check-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.1);
+        }
+        
+        .form-check-label {
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+        
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            opacity: 0.6;
+        }
+        
+        .btn-close:hover {
+            opacity: 1;
+        }
+        
+        .alert {
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid;
+            box-shadow: var(--shadow-sm);
+            padding: 1rem 1.25rem;
+            background: var(--bg-card);
+            transition: all 0.2s ease;
+        }
+        
+        .alert-success {
+            border-left-color: var(--success);
+        }
+        
+        .alert-danger {
+            border-left-color: var(--danger);
+        }
+        
+        .alert-warning {
+            border-left-color: var(--warning);
+        }
+        
+        .alert-info {
+            border-left-color: var(--info);
+        }
+        
+        .footer {
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            padding: 2rem 0;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .footer p {
+            margin: 0;
+            font-size: 0.875rem;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+        
+        .hero-section {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 4rem 0;
+            border-radius: 8px;
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .hero-section h1 {
+            font-weight: 600;
+            font-size: 3rem;
+            letter-spacing: -0.04em;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .hero-section .lead {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+        
+        .progress {
+            height: 6px;
+            border-radius: 3px;
+            background-color: var(--bg-card-hover);
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-bar.bg-success {
+            background: var(--success) !important;
+        }
+        
+        .dropdown-menu {
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            padding: 0.5rem;
+            z-index: 1050 !important;
+            position: absolute;
+            background: var(--bg-card);
+        }
+        
+        .dropdown-item {
+            border-radius: 4px;
+            padding: 0.625rem 0.875rem;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            display: block;
+            text-decoration: none;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .dropdown-item:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary) !important;
+        }
+        
+        .nav-item.dropdown {
+            position: relative;
+        }
+        
+        .navbar {
+            z-index: 1030;
+            position: relative;
+        }
+        
+        main {
+            position: relative;
+            z-index: 1;
+            padding: 1.5rem 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--text-secondary);
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            opacity: 0.15;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            animation: float 3s ease-in-out infinite;
+            display: inline-block;
+        }
+        
+        .empty-state h4 {
+            font-weight: 500;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            animation: fadeInUp 0.8s ease-out 0.2s backwards;
+        }
+        
+        .empty-state p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            animation: fadeInUp 0.8s ease-out 0.4s backwards;
+        }
+        
+        .empty-state .btn {
+            animation: fadeInUp 0.8s ease-out 0.6s backwards;
+        }
+        
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-group .btn {
+            margin: 0 0.25rem;
+        }
+        
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .form-label {
+            font-weight: 400;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+        }
+        
+        hr {
+            border: none;
+            border-top: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+        }
+        
+        .dropdown-divider {
+            border-top: 1px solid var(--border-color);
+            margin: 0.5rem 0;
+        }
+        
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: none;
+        }
+        
+        p, span, div {
+            color: var(--text-primary);
+        }
+        
+        small {
+            color: var(--text-secondary);
+        }
+        
+        strong, b {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        
+        ul, ol {
+            color: var(--text-primary);
+        }
+        
+        li {
+            color: var(--text-primary);
+        }
+        
+        code {
+            background: var(--bg-card-hover);
+            color: var(--primary);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-size: 0.875em;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+        }
+        
+        pre {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+        }
+        
+        .bg-success {
+            background-color: var(--success) !important;
+        }
+        
+        .bg-warning {
+            background-color: var(--warning) !important;
+        }
+        
+        .bg-danger {
+            background-color: var(--danger) !important;
+        }
+        
+        .bg-info {
+            background-color: var(--info) !important;
+        }
+        
+        .bg-primary {
+            background-color: var(--primary) !important;
+        }
+        
+        .bg-secondary {
+            background-color: var(--bg-card) !important;
+        }
+        
+        /* Estilo para ícones - cor da logo (bege/off-white) */
+        .bi,
+        [class^="bi-"],
+        [class*=" bi-"],
+        i.bi {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Ícones em títulos e cabeçalhos */
+        h1 .bi,
+        h2 .bi,
+        h3 .bi,
+        h4 .bi,
+        h5 .bi,
+        h6 .bi,
+        .page-title .bi,
+        .card-header .bi {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Ícones em botões - manter cores específicas apenas quando necessário */
+        .btn .bi {
+            color: inherit !important;
+        }
+        
+        /* Ícones em cards de estatísticas - usar cor da logo */
+        .stats-card .bi {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Ícones em navegação */
+        .navbar .bi,
+        .nav-link .bi {
+            color: var(--text-secondary) !important;
+        }
+        
+        .navbar .nav-link:hover .bi,
+        .navbar .nav-link.active .bi {
+            color: var(--primary) !important;
+        }
+        
+        /* Card headers com cores de fundo */
+        .card-header.bg-primary,
+        .card-header.bg-success,
+        .card-header.bg-info,
+        .card-header.bg-warning,
+        .card-header.bg-danger {
+            color: var(--text-primary) !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card-header.bg-primary {
+            background: rgba(74, 158, 255, 0.2) !important;
+            border-left: 3px solid var(--primary);
+        }
+        
+        .card-header.bg-success {
+            background: rgba(74, 222, 128, 0.2) !important;
+            border-left: 3px solid var(--success);
+        }
+        
+        .card-header.bg-info {
+            background: rgba(96, 165, 250, 0.2) !important;
+            border-left: 3px solid var(--info);
+        }
+        
+        .card-header.bg-warning {
+            background: rgba(251, 191, 36, 0.2) !important;
+            border-left: 3px solid var(--warning);
+        }
+        
+        .card-header.bg-danger {
+            background: rgba(248, 113, 113, 0.2) !important;
+            border-left: 3px solid var(--danger);
+        }
+        
+        .text-dark {
+            color: var(--text-primary) !important;
+        }
+        
+        .text-success {
+            color: var(--success) !important;
+        }
+        
+        .text-warning {
+            color: var(--warning) !important;
+        }
+        
+        .text-danger {
+            color: var(--danger) !important;
+        }
+        
+        .text-info {
+            color: var(--info) !important;
+        }
+        
+        .text-primary {
+            color: var(--primary) !important;
+        }
+        
+        .container {
+            max-width: 1200px;
+        }
+        
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-card);
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--bg-card-hover);
+        }
+        
+        /* Seleção de texto */
+        ::selection {
+            background: rgba(74, 158, 255, 0.3);
+            color: var(--text-primary);
+        }
+        
+        /* Input number sem setas */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        
+        /* Loading spinner */
+        .spinner-border {
+            border-color: var(--text-secondary);
+            border-right-color: transparent;
+        }
+        
+        /* Sobrescrever qualquer estilo do Bootstrap que possa deixar elementos brancos */
+        .table-hover tbody tr {
+            background-color: transparent !important;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: var(--bg-card-hover) !important;
+        }
+        
+        /* Garantir que todos os elementos de texto usem a cor correta */
+        th {
+            color: var(--text-secondary) !important;
+        }
+        
+        td {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Garantir que elementos de lista não tenham fundo branco */
+        ul, ol {
+            background: transparent !important;
+        }
+        
+        /* Garantir que elementos de texto não tenham fundo branco */
+        p, span, h1, h2, h3, h4, h5, h6 {
+            background: transparent !important;
+        }
+        
+        /* FORÇA BRUTA - Sobrescrever qualquer fundo branco que possa aparecer */
+        div:not(.card):not(.navbar):not(.stats-card):not(.btn):not(.badge):not(.alert):not(.dropdown-menu):not(.form-control):not(.form-select):not(.progress):not(.progress-bar):not(.table):not(.table-responsive) {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        section, article, aside, header, footer {
+            background: transparent !important;
+            background-color: transparent !important;
+        }
+        
+        /* Garantir que elementos do Bootstrap não tenham fundo branco */
+        .card-body > *,
+        .card-header > *,
+        .card-footer > * {
+            background: transparent !important;
+        }
+        
+        /* Sobrescrever estilos inline que possam ter sido aplicados */
+        [style*="background"]:not(.card):not(.navbar):not(.stats-card):not(.btn):not(.badge):not(.alert) {
+            background: transparent !important;
+        }
+        
+        [style*="background-color"]:not(.card):not(.navbar):not(.stats-card):not(.btn):not(.badge):not(.alert) {
+            background-color: transparent !important;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-card .display-4 {
+                font-size: 1.75rem;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .hero-section {
+                padding: 3rem 0;
+            }
+            
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+            
+            .btn-lg {
+                padding: 0.75rem 1.5rem;
+                font-size: 0.9375rem;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="page-wrapper">
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='images/helios-logo.png') }}" alt="HELIOS Logo" class="logo-img">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.solucao') }}">Solução</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.contato') }}">Contato</a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.graficos') }}">Gráficos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('main.vender_energia') }}">Vender Energia</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('parques.listar') }}">Parques Solares</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('inversores.listar') }}">Inversores</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('regras.listar') }}">Regras</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('placas.mapeamento') }}">Placas Solares</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> {{ current_user.nome }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('main.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.graficos') }}"><i class="bi bi-bar-chart"></i> Gráficos</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.vender_energia') }}"><i class="bi bi-cash-coin"></i> Vender Energia</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('parques.listar') }}"><i class="bi bi-building"></i> Parques Solares</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('inversores.listar') }}"><i class="bi bi-cpu"></i> Inversores</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('regras.listar') }}"><i class="bi bi-shield-check"></i> Regras de Alerta</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('placas.mapeamento') }}"><i class="bi bi-sun"></i> Placas Solares</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right"></i> Sair</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container my-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    </div>
+    
+    <footer class="footer">
+        <div class="container text-center">
+            <p>&copy; 2025 HELIOS</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Garantir que o dropdown funciona
+        document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar dropdowns do Bootstrap
+            var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+            var dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                return new bootstrap.Dropdown(dropdownToggleEl);
+            });
+            
+            // Animação de contador para números
+            function animateCounter(element, target, duration = 2000, originalText = '') {
+                const start = 0;
+                const increment = target / (duration / 16);
+                let current = start;
+                const hasDecimal = target % 1 !== 0;
+                const decimals = hasDecimal ? 1 : 0;
+                
+                // Preservar texto adicional (como unidades)
+                const textParts = originalText.match(/(\d+\.?\d*)(.*)/);
+                const suffix = textParts && textParts[2] ? textParts[2].trim() : '';
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        element.textContent = target.toFixed(decimals) + (suffix ? ' ' + suffix : '');
+                        clearInterval(timer);
+                    } else {
+                        element.textContent = current.toFixed(decimals) + (suffix ? ' ' + suffix : '');
+                    }
+                }, 16);
+            }
+            
+            // Observar elementos de estatísticas
+            const statsCards = document.querySelectorAll('.stats-card .display-4');
+            const observerOptions = {
+                threshold: 0.3,
+                rootMargin: '0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !entry.target.classList.contains('animated')) {
+                        entry.target.classList.add('animated');
+                        const originalText = entry.target.textContent;
+                        const number = parseFloat(originalText.replace(/[^\d.-]/g, ''));
+                        if (!isNaN(number) && number > 0) {
+                            animateCounter(entry.target, number, 2000, originalText);
+                        }
+                    }
+                });
+            }, observerOptions);
+            
+            statsCards.forEach(card => {
+                observer.observe(card);
+            });
+            
+            // Animação de fade-in para elementos ao fazer scroll
+            const animateOnScroll = document.querySelectorAll('.animate-on-scroll, .card, .table tbody tr');
+            const scrollObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                        entry.target.style.opacity = '1';
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+            
+            animateOnScroll.forEach(element => {
+                scrollObserver.observe(element);
+            });
+            
+            
+            // Adicionar efeito de ripple nos botões
+            document.querySelectorAll('.btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+            
+            // Animações para alertas
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.animation = 'slideInRight 0.5s ease-out';
+                alert.addEventListener('click', function() {
+                    this.style.animation = 'fadeOut 0.3s ease-out forwards';
+                    setTimeout(() => {
+                        this.remove();
+                    }, 300);
+                });
+            });
+            
+            // Adicionar efeito de hover nos cards da tabela
+            document.querySelectorAll('.table tbody tr').forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(2px)';
+                });
+                row.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+            
+            // Animação suave ao clicar em links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // Adicionar animação de loading para formulários
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    if (submitBtn && !submitBtn.disabled) {
+                        const originalHTML = submitBtn.innerHTML;
+                        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processando...';
+                        submitBtn.disabled = true;
+                        submitBtn.style.opacity = '0.7';
+                        submitBtn.style.cursor = 'not-allowed';
+                        
+                        // Se o formulário não enviar (validação falhar), restaurar botão
+                        setTimeout(() => {
+                            if (submitBtn.disabled) {
+                                submitBtn.innerHTML = originalHTML;
+                                submitBtn.disabled = false;
+                                submitBtn.style.opacity = '1';
+                                submitBtn.style.cursor = 'pointer';
+                            }
+                        }, 5000);
+                    }
+                });
+            });
+            
+            // Adicionar efeito de typing para textos (opcional, para elementos específicos)
+            function typeWriter(element, text, speed = 50) {
+                let i = 0;
+                element.textContent = '';
+                function type() {
+                    if (i < text.length) {
+                        element.textContent += text.charAt(i);
+                        i++;
+                        setTimeout(type, speed);
+                    }
+                }
+                type();
+            }
+        });
+        
+        // Scroll Reveal - Animação de elementos ao fazer scroll (com reversão)
+        const scrollReveal = () => {
+            // Elementos que serão animados
+            const elementsToReveal = document.querySelectorAll('.reveal, .card, .stats-card, .table tbody tr');
+            
+            // Opções do Intersection Observer
+            const observerOptions = {
+                threshold: 0.1, // Dispara quando 10% do elemento está visível
+                rootMargin: '0px 0px -50px 0px' // Margem adicional
+            };
+            
+            // Callback do observer
+            const observerCallback = (entries, observer) => {
+                entries.forEach(entry => {
+                    const element = entry.target;
+                    const revealType = element.getAttribute('data-reveal') || 'fade-up';
+                    
+                    if (entry.isIntersecting) {
+                        // Elemento entrou na viewport - mostrar
+                        element.classList.remove('reveal-hidden');
+                        element.classList.add(`reveal-${revealType}`);
+                        element.classList.add('reveal-visible');
+                    } else {
+                        // Elemento saiu da viewport - esconder novamente
+                        element.classList.remove('reveal-visible');
+                        element.classList.remove(`reveal-${revealType}`);
+                        element.classList.add('reveal-hidden');
+                    }
+                });
+            };
+            
+            // Criar observer
+            const observer = new IntersectionObserver(observerCallback, observerOptions);
+            
+            // Observar todos os elementos
+            elementsToReveal.forEach(element => {
+                // Adicionar classe inicial para ocultar
+                if (!element.classList.contains('reveal-visible')) {
+                    element.classList.add('reveal-hidden');
+                }
+                observer.observe(element);
+            });
+        };
+        
+        // Scroll Reveal Lateral (Horizontal)
+        const scrollRevealLateral = () => {
+            // Elementos que serão animados lateralmente
+            const elementsLateral = document.querySelectorAll('.reveal-lateral, [data-reveal-lateral]');
+            
+            // Opções do Intersection Observer para scroll lateral
+            const observerOptionsLateral = {
+                threshold: 0.2,
+                rootMargin: '0px -100px 0px -100px' // Margem para detectar antes de entrar completamente
+            };
+            
+            // Callback do observer lateral
+            const observerCallbackLateral = (entries, observer) => {
+                entries.forEach(entry => {
+                    const element = entry.target;
+                    const direction = element.getAttribute('data-reveal-lateral') || 'left';
+                    
+                    if (entry.isIntersecting) {
+                        // Elemento entrou na viewport - mostrar
+                        element.classList.remove('reveal-lateral-hidden');
+                        element.classList.add(`reveal-lateral-${direction}`);
+                        element.classList.add('reveal-lateral-visible');
+                    } else {
+                        // Elemento saiu da viewport - esconder novamente
+                        element.classList.remove('reveal-lateral-visible');
+                        element.classList.remove(`reveal-lateral-${direction}`);
+                        element.classList.add('reveal-lateral-hidden');
+                    }
+                });
+            };
+            
+            // Criar observer lateral
+            const observerLateral = new IntersectionObserver(observerCallbackLateral, observerOptionsLateral);
+            
+            // Observar todos os elementos laterais
+            elementsLateral.forEach(element => {
+                if (!element.classList.contains('reveal-lateral-visible')) {
+                    element.classList.add('reveal-lateral-hidden');
+                }
+                observerLateral.observe(element);
+            });
+        };
+        
+        // Animação ao recarregar página (F5)
+        const animateOnLoad = () => {
+            // Resetar todos os elementos reveal
+            const allRevealElements = document.querySelectorAll('.reveal, .card, .stats-card, .reveal-lateral, [data-reveal-lateral]');
+            
+            allRevealElements.forEach((element, index) => {
+                // Remover classes de visibilidade
+                element.classList.remove('reveal-visible', 'reveal-lateral-visible');
+                element.classList.remove('reveal-fade-up', 'reveal-fade-down', 'reveal-fade-left', 'reveal-fade-right', 'reveal-scale', 'reveal-rotate', 'reveal-fade');
+                element.classList.remove('reveal-lateral-left', 'reveal-lateral-right');
+                
+                // Adicionar classe de ocultação
+                element.classList.add('reveal-hidden');
+                if (element.classList.contains('reveal-lateral') || element.hasAttribute('data-reveal-lateral')) {
+                    element.classList.add('reveal-lateral-hidden');
+                }
+                
+                // Pequeno delay para criar efeito cascata
+                setTimeout(() => {
+                    // Verificar se elemento está visível na viewport
+                    const rect = element.getBoundingClientRect();
+                    const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+                    
+                    if (isVisible) {
+                        const revealType = element.getAttribute('data-reveal') || 'fade-up';
+                        const lateralDirection = element.getAttribute('data-reveal-lateral');
+                        
+                        if (lateralDirection) {
+                            element.classList.remove('reveal-lateral-hidden');
+                            element.classList.add(`reveal-lateral-${lateralDirection}`);
+                            element.classList.add('reveal-lateral-visible');
+                        } else {
+                            element.classList.remove('reveal-hidden');
+                            element.classList.add(`reveal-${revealType}`);
+                            element.classList.add('reveal-visible');
+                        }
+                    }
+                }, index * 50); // Delay progressivo de 50ms por elemento
+            });
+        };
+        
+        // Inicializar scroll reveals quando o DOM estiver pronto
+        const initScrollReveals = () => {
+            scrollReveal();
+            scrollRevealLateral();
+            // Animar elementos visíveis ao carregar
+            setTimeout(animateOnLoad, 100);
+        };
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initScrollReveals);
+        } else {
+            initScrollReveals();
+        }
+        
+        // Re-animar ao recarregar página (F5)
+        window.addEventListener('beforeunload', () => {
+            // Preparar para recarregar
+        });
+        
+        // Animar novamente após recarregar
+        window.addEventListener('load', () => {
+            setTimeout(animateOnLoad, 200);
+        });
+        
+        // Adicionar estilo para ripple effect e scroll reveal
+        const style = document.createElement('style');
+        style.textContent = `
+            .btn {
+                position: relative;
+                overflow: hidden;
+            }
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.6);
+                transform: scale(0);
+                animation: ripple-animation 0.6s ease-out;
+                pointer-events: none;
+            }
+            @keyframes ripple-animation {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+            @keyframes fadeOut {
+                to {
+                    opacity: 0;
+                    transform: translateX(100%);
+                }
+            }
+            
+            /* Scroll Reveal Styles */
+            .reveal-hidden {
+                opacity: 0;
+                visibility: hidden;
+            }
+            
+            .reveal-visible {
+                opacity: 1;
+                visibility: visible;
+                transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            }
+            
+            /* Fade Up - Animação padrão */
+            .reveal-fade-up {
+                transform: translateY(30px);
+            }
+            .reveal-visible.reveal-fade-up {
+                transform: translateY(0);
+            }
+            
+            /* Fade Down */
+            .reveal-fade-down {
+                transform: translateY(-30px);
+            }
+            .reveal-visible.reveal-fade-down {
+                transform: translateY(0);
+            }
+            
+            /* Fade Left */
+            .reveal-fade-left {
+                transform: translateX(30px);
+            }
+            .reveal-visible.reveal-fade-left {
+                transform: translateX(0);
+            }
+            
+            /* Fade Right */
+            .reveal-fade-right {
+                transform: translateX(-30px);
+            }
+            .reveal-visible.reveal-fade-right {
+                transform: translateX(0);
+            }
+            
+            /* Scale */
+            .reveal-scale {
+                transform: scale(0.8);
+            }
+            .reveal-visible.reveal-scale {
+                transform: scale(1);
+            }
+            
+            /* Rotate */
+            .reveal-rotate {
+                transform: rotate(-10deg);
+            }
+            .reveal-visible.reveal-rotate {
+                transform: rotate(0);
+            }
+            
+            /* Fade Only */
+            .reveal-fade {
+                transform: none;
+            }
+            
+            /* Delay classes */
+            .reveal-delay-1 {
+                transition-delay: 0.1s;
+            }
+            .reveal-delay-2 {
+                transition-delay: 0.2s;
+            }
+            .reveal-delay-3 {
+                transition-delay: 0.3s;
+            }
+            .reveal-delay-4 {
+                transition-delay: 0.4s;
+            }
+            .reveal-delay-5 {
+                transition-delay: 0.5s;
+            }
+            
+            /* Scroll Reveal Lateral (Horizontal) */
+            .reveal-lateral-hidden {
+                opacity: 0;
+                visibility: hidden;
+            }
+            
+            .reveal-lateral-visible {
+                opacity: 1;
+                visibility: visible;
+                transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            }
+            
+            /* Lateral Left - Vem da esquerda */
+            .reveal-lateral-left {
+                transform: translateX(-100px);
+            }
+            .reveal-lateral-visible.reveal-lateral-left {
+                transform: translateX(0);
+            }
+            
+            /* Lateral Right - Vem da direita */
+            .reveal-lateral-right {
+                transform: translateX(100px);
+            }
+            .reveal-lateral-visible.reveal-lateral-right {
+                transform: translateX(0);
+            }
+            
+            /* Delay para lateral */
+            .reveal-lateral-delay-1 {
+                transition-delay: 0.1s;
+            }
+            .reveal-lateral-delay-2 {
+                transition-delay: 0.2s;
+            }
+            .reveal-lateral-delay-3 {
+                transition-delay: 0.3s;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

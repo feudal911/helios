@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Recuperar Senha - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header bg-warning text-center">
+                <h3><i class="bi bi-key"></i> Recuperar Senha</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <small class="text-muted">Digite seu email cadastrado para receber instruções de recuperação.</small>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-send"></i> Enviar Email de Recuperação
+                        </button>
+                    </div>
+                </form>
+                <hr>
+                <div class="text-center">
+                    <a href="{{ url_for('auth.login') }}">Voltar para login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Parques Solares - HELIOS{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title"><i class="bi bi-building"></i> Parques Solares</h1>
+        <p class="text-muted" style="font-size: 0.9375rem;">Gerencie seus parques solares</p>
+    </div>
+    <div class="col-md-4 text-end d-flex align-items-end justify-content-end">
+        <a href="{{ url_for('parques.criar') }}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Novo Parque
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        {% if parques %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Localização</th>
+                        <th>Capacidade (kW)</th>
+                        <th>Geração Hoje (kW)</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for parque in parques %}
+                    <tr>
+                        <td><strong>{{ parque.nome }}</strong></td>
+                        <td>{{ parque.localizacao }}</td>
+                        <td>{{ "%.2f"|format(parque.capacidade_total_kw) }}</td>
+                        <td>{{ "%.2f"|format(parque.geracao_hoje) }}</td>
+                        <td>
+                            {% if parque.status == 'ativo' %}
+                                <span class="badge bg-success">{{ parque.status|title }}</span>
+                            {% elif parque.status == 'inativo' %}
+                                <span class="badge bg-secondary">{{ parque.status|title }}</span>
+                            {% else %}
+                                <span class="badge bg-warning">{{ parque.status|title }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('parques.detalhes', id=parque.id) }}" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{{ url_for('parques.editar', id=parque.id) }}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <form method="POST" action="{{ url_for('parques.excluir', id=parque.id) }}" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" 
+                                        onclick="return confirm('Tem certeza que deseja excluir este parque?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                            <a href="{{ url_for('parques.download_relatorio', id=parque.id, formato='pdf') }}" 
+                               class="btn btn-sm btn-secondary" title="Download PDF">
+                                <i class="bi bi-file-pdf"></i>
+                            </a>
+                            <a href="{{ url_for('parques.download_relatorio', id=parque.id, formato='csv') }}" 
+                               class="btn btn-sm btn-secondary" title="Download CSV">
+                                <i class="bi bi-file-csv"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state p-5">
+            <i class="bi bi-building"></i>
+            <h4>Nenhum parque cadastrado ainda</h4>
+            <p class="mb-4">Comece criando seu primeiro parque solar</p>
+            <a href="{{ url_for('parques.criar') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Criar Primeiro Parque
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
