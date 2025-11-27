@@ -156,3 +156,5 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull re
 
 Para mais informações, entre em contato através da aplicação.
 
+
+
